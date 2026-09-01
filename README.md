@@ -4,7 +4,8 @@ The contract between the [GoCraft](https://github.com/GoCraft-MC/GoCraft) server
 and every plugin runtime it drives. One schema, and the two pieces of code that
 both ends of a connection would otherwise write twice.
 
-It depends on nothing but protobuf, and it must stay that way. Everything here
+It depends on protobuf and, for the manifest, a TOML parser. Nothing else, and
+it must stay that way. Everything here
 is imported by the server, by the Go SDK and — through generated Java — by the
 JVM runtime; a dependency added here is a dependency added to all of them.
 
@@ -16,6 +17,17 @@ JVM runtime; a dependency added here is a dependency added to all of them.
 | `abi/v1/wire` | the generated Go types, committed so nothing needs buf to build |
 | `abi/v1` | the domain types the rest of the code works on: values, events, commands |
 | `ipc` | framing and the wire ↔ domain conversion |
+| `command` | the command tree: its shape, its rules, and the two codecs |
+| `bundle` | the `.gcpkg` format: the manifest, and reading an archive back |
+
+`command` and `bundle` are formats rather than behaviour. A build tool writes
+them and a host reads them, and sharing the code rather than the description is
+what lets a build refuse a tree the server would have refused — on the machine
+that has the source, rather than on someone's server.
+
+What stays with the host is anything that needs a running world: resolving a
+typed line against a permission-pruned view, scanning a drop directory, deciding
+where a plugin's data lives.
 
 `abi/v1` and `abi/v1/wire` are two views of the same thing on purpose. The
 generated types stop at the `ipc` boundary; the bus, the mutation queue and the
