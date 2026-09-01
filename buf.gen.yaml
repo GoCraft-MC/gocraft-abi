@@ -1,0 +1,23 @@
+# Code generation for the plugin ABI.
+#
+# Generated files are committed, so neither CI nor a contributor needs buf or
+# protoc-gen-go to build against this module. `buf generate` regenerates them;
+# CI can verify that doing so leaves no diff.
+#
+# Every schema here is generated. A schema that is parsed by hand somewhere else
+# is a second definition of the same format, free to drift from this one without
+# anything noticing — which is the failure `buf breaking` exists to prevent.
+# Generated types stay at the wire boundary: packages convert them into their
+# own neutral types rather than passing them around.
+#
+# The runtimes are generated elsewhere. protoc-gen-gocraft emits the host, the
+# Go SDK and the Java API from events.proto, and it lives in the GoCraft
+# repository because it knows each host's package layout — see the comment on
+# buf.gen.events.yaml there. This template covers only the wire types, which
+# belong to the schema and to nothing else.
+version: v2
+
+plugins:
+  - local: protoc-gen-go
+    out: .
+    opt: module=github.com/GoCraft-MC/gocraft-abi
