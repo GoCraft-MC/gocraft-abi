@@ -60,7 +60,7 @@ func DecodeManifest(reader io.Reader) (Manifest, error) {
 	for _, event := range file.Subscribe.Events {
 		manifest.Subscriptions = append(manifest.Subscriptions, Subscription{Event: event, Priority: PriorityNormal})
 	}
-	if err := validateManifest(manifest); err != nil {
+	if err := ValidateManifest(manifest); err != nil {
 		return Manifest{}, err
 	}
 	return manifest, nil
@@ -88,7 +88,13 @@ func decodeFailure(err error) error {
 	return fmt.Errorf("decode %s: %w", ManifestFileName, err)
 }
 
-func validateManifest(manifest Manifest) error {
+// ValidateManifest reports whether a manifest is well formed.
+//
+// DecodeManifest runs it, so a manifest read from an archive has already
+// passed. It is exported for the other way in: a host that assembles a
+// manifest itself, or a test that writes one by hand, asks the same question
+// rather than a second opinion of it.
+func ValidateManifest(manifest Manifest) error {
 	if !validPluginID(manifest.ID) {
 		return fmt.Errorf("plugin manifest: invalid id %q", manifest.ID)
 	}
