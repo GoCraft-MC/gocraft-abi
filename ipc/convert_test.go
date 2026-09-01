@@ -88,11 +88,11 @@ func TestEventSurvivesARoundTrip(t *testing.T) {
 			abi.String("minecraft:stone"),
 		},
 	}
-	encoded, err := encodeEvent(event)
+	encoded, err := EncodeEvent(event)
 	if err != nil {
 		t.Fatal(err)
 	}
-	decoded, err := decodeEvent(encoded)
+	decoded, err := DecodeEvent(encoded)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,11 +131,11 @@ func TestVerdictSurvivesARoundTrip(t *testing.T) {
 			{Type: "world.teleport"},
 		},
 	}
-	encoded, err := encodeVerdict(verdict)
+	encoded, err := EncodeVerdict(verdict)
 	if err != nil {
 		t.Fatal(err)
 	}
-	decoded, err := decodeVerdict(encoded)
+	decoded, err := DecodeVerdict(encoded)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,11 +145,11 @@ func TestVerdictSurvivesARoundTrip(t *testing.T) {
 }
 
 func TestEmptyVerdictSurvivesARoundTrip(t *testing.T) {
-	encoded, err := encodeVerdict(abi.Verdict{})
+	encoded, err := EncodeVerdict(abi.Verdict{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	decoded, err := decodeVerdict(encoded)
+	decoded, err := DecodeVerdict(encoded)
 	if err != nil {
 		t.Fatal(err)
 	}

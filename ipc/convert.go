@@ -153,7 +153,8 @@ func decodeValues(values []*wire.Value) ([]abi.Value, error) {
 	return decoded, nil
 }
 
-func encodeEvent(event *abi.Event) (*wire.Event, error) {
+// EncodeEvent converts a shared event for transmission to a runtime.
+func EncodeEvent(event *abi.Event) (*wire.Event, error) {
 	if event == nil {
 		return nil, fmt.Errorf("ipc: missing event")
 	}
@@ -173,12 +174,8 @@ func encodeEvent(event *abi.Event) (*wire.Event, error) {
 	}, nil
 }
 
-// EncodeEvent converts a shared event for transmission to a runtime.
-func EncodeEvent(event *abi.Event) (*wire.Event, error) {
-	return encodeEvent(event)
-}
-
-func decodeEvent(event *wire.Event) (*abi.Event, error) {
+// DecodeEvent converts an untrusted runtime wire event into the shared ABI form.
+func DecodeEvent(event *wire.Event) (*abi.Event, error) {
 	if event == nil {
 		return nil, fmt.Errorf("ipc: missing event")
 	}
@@ -196,11 +193,6 @@ func decodeEvent(event *wire.Event) (*abi.Event, error) {
 		Fields:    fields,
 		OnFailure: policy,
 	}, nil
-}
-
-// DecodeEvent converts an untrusted runtime wire event into the shared ABI form.
-func DecodeEvent(event *wire.Event) (*abi.Event, error) {
-	return decodeEvent(event)
 }
 
 func encodeHostCall(call abi.HostCall) (*wire.HostCall, error) {
@@ -222,7 +214,8 @@ func decodeHostCall(call *wire.HostCall) (abi.HostCall, error) {
 	return abi.HostCall{Type: call.GetType(), Fields: fields}, nil
 }
 
-func encodeVerdict(verdict abi.Verdict) (*wire.Verdict, error) {
+// EncodeVerdict converts a plugin verdict for transmission to the host.
+func EncodeVerdict(verdict abi.Verdict) (*wire.Verdict, error) {
 	mutations := make([]*wire.Mutation, 0, len(verdict.Mutations))
 	for _, mutation := range verdict.Mutations {
 		value, err := encodeValue(mutation.Value)
@@ -242,12 +235,8 @@ func encodeVerdict(verdict abi.Verdict) (*wire.Verdict, error) {
 	return &wire.Verdict{Cancelled: verdict.Cancelled, Mutations: mutations, Effects: effects}, nil
 }
 
-// EncodeVerdict converts a plugin verdict for transmission to the host.
-func EncodeVerdict(verdict abi.Verdict) (*wire.Verdict, error) {
-	return encodeVerdict(verdict)
-}
-
-func decodeVerdict(verdict *wire.Verdict) (abi.Verdict, error) {
+// DecodeVerdict converts an untrusted runtime verdict into the shared ABI form.
+func DecodeVerdict(verdict *wire.Verdict) (abi.Verdict, error) {
 	if verdict == nil {
 		return abi.Verdict{}, fmt.Errorf("ipc: missing verdict")
 	}
@@ -311,7 +300,8 @@ func encodeCommandSender(sender abi.CommandSender) (*wire.CommandSender, error) 
 	return &wire.CommandSender{Player: player, Name: sender.Name, Permissions: permissions}, nil
 }
 
-func encodeCommandInvocation(invocation abi.CommandInvocation) (*wire.Invoke, error) {
+// EncodeCommandInvocation converts a command call for transmission to a runtime.
+func EncodeCommandInvocation(invocation abi.CommandInvocation) (*wire.Invoke, error) {
 	sender, err := encodeCommandSender(invocation.Sender)
 	if err != nil {
 		return nil, err
@@ -333,7 +323,9 @@ func encodeCommandInvocation(invocation abi.CommandInvocation) (*wire.Invoke, er
 	return &wire.Invoke{Executor: invocation.Executor, Sender: sender, Arguments: arguments}, nil
 }
 
-func decodeCommandResult(invoked *wire.Invoked) (abi.CommandResult, error) {
+// DecodeCommandResult converts an untrusted runtime command reply into the
+// shared ABI form.
+func DecodeCommandResult(invoked *wire.Invoked) (abi.CommandResult, error) {
 	if invoked == nil {
 		return abi.CommandResult{}, fmt.Errorf("ipc: missing command result")
 	}
