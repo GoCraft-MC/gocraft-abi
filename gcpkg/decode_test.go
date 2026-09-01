@@ -1,4 +1,4 @@
-package bundle
+package gcpkg
 
 import (
 	"strings"

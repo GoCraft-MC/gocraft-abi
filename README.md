@@ -18,9 +18,9 @@ JVM runtime; a dependency added here is a dependency added to all of them.
 | `abi/v1` | the domain types the rest of the code works on: values, events, commands |
 | `ipc` | framing and the wire ↔ domain conversion |
 | `command` | the command tree: its shape, its rules, and the two codecs |
-| `bundle` | the `.gcpkg` format: the manifest, and reading an archive back |
+| `gcpkg` | the bundle format: the manifest, and reading an archive back |
 
-`command` and `bundle` are formats rather than behaviour. A build tool writes
+`command` and `gcpkg` are formats rather than behaviour. A build tool writes
 them and a host reads them, and sharing the code rather than the description is
 what lets a build refuse a tree the server would have refused — on the machine
 that has the source, rather than on someone's server.

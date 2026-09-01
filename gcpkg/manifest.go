@@ -1,5 +1,9 @@
-// Package bundle is the .gcpkg format: what a build tool writes and a host
-// reads back.
+// Package gcpkg is the plugin bundle format: what a build tool writes and a
+// host reads back.
+//
+// Named after the file extension rather than "bundle", because every consumer
+// already has a local variable called that and a package name it shadows is a
+// package nobody can reach.
 //
 // It describes an archive and nothing else. Where a server puts a plugin's
 // data, how it scans a drop directory, when it extracts defaults — those are
@@ -8,7 +12,7 @@
 //
 // The manifest is the contract's other half. The ABI says what crosses the
 // socket once a plugin runs; this says what has to be true before it can.
-package bundle
+package gcpkg
 
 import "github.com/GoCraft-MC/gocraft-abi/command"
 
