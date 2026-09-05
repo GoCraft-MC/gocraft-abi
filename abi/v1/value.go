@@ -90,16 +90,24 @@ func diffInto(mutations *[]Mutation, path []uint32, before, after []Value) {
 		return
 	}
 	for index := range before {
-		at := append(append([]uint32(nil), path...), uint32(index))
 		left, right := before[index], after[index]
+		// Lists first, and without asking Equal: it would walk the children to
+		// answer, and the recursion below walks them again. Descending straight
+		// away compares each element once.
+		if left.Kind == ValueList && right.Kind == ValueList &&
+			len(left.List) == len(right.List) {
+			diffInto(mutations, append(path, uint32(index)), left.List, right.List)
+			continue
+		}
 		if Equal(left, right) {
 			continue
 		}
-		if left.Kind == ValueList && right.Kind == ValueList &&
-			len(left.List) == len(right.List) {
-			diffInto(mutations, at, left.List, right.List)
-			continue
-		}
+		// Built only once a difference is confirmed. Allocating a path for
+		// every index visited would allocate one per element of an untouched
+		// list of a thousand.
+		at := make([]uint32, len(path)+1)
+		copy(at, path)
+		at[len(path)] = uint32(index)
 		*mutations = append(*mutations, Mutation{Path: at, Value: right})
 	}
 }
