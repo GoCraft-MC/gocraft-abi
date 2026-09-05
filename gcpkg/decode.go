@@ -32,6 +32,22 @@ type manifestFile struct {
 	Commands struct {
 		Tree string `toml:"tree"`
 	} `toml:"commands"`
+	Events struct {
+		Provides []providedEventFile `toml:"provides"`
+	} `toml:"events"`
+}
+
+type providedEventFile struct {
+	Type        string           `toml:"type"`
+	Cancellable bool             `toml:"cancellable"`
+	FailClosed  bool             `toml:"fail_closed"`
+	Fields      []eventFieldFile `toml:"fields"`
+}
+
+type eventFieldFile struct {
+	Name    string `toml:"name"`
+	Type    string `toml:"type"`
+	Mutable bool   `toml:"mutable"`
 }
 
 // DecodeManifest reads and validates one plugin.toml. It is the only manifest
@@ -59,6 +75,19 @@ func DecodeManifest(reader io.Reader) (Manifest, error) {
 	}
 	for _, event := range file.Subscribe.Events {
 		manifest.Subscriptions = append(manifest.Subscriptions, Subscription{Event: event, Priority: PriorityNormal})
+	}
+	for _, provided := range file.Events.Provides {
+		definition := EventDefinition{
+			Type: provided.Type, Cancellable: provided.Cancellable,
+			FailClosed: provided.FailClosed,
+			Fields:     make([]EventField, 0, len(provided.Fields)),
+		}
+		for _, field := range provided.Fields {
+			definition.Fields = append(definition.Fields, EventField{
+				Name: field.Name, Type: field.Type, Mutable: field.Mutable,
+			})
+		}
+		manifest.Provides = append(manifest.Provides, definition)
 	}
 	if err := ValidateManifest(manifest); err != nil {
 		return Manifest{}, err
@@ -130,7 +159,76 @@ func ValidateManifest(manifest Manifest) error {
 		}
 		seen[subscription.Event] = struct{}{}
 	}
+	return validateProvides(manifest)
+}
+
+// validateProvides checks the event types this plugin declares it can emit.
+//
+// Only the shape is checked here. Whether another plugin already provides the
+// same type, and whether a subscription names a type nobody provides, are
+// questions about a set of bundles rather than about one manifest — the host
+// answers them once it has scanned them all.
+func validateProvides(manifest Manifest) error {
+	provided := make(map[string]struct{}, len(manifest.Provides))
+	for _, definition := range manifest.Provides {
+		if !validEventType(definition.Type) {
+			return fmt.Errorf("plugin %s: invalid provided event type %q, want namespace/name", manifest.ID, definition.Type)
+		}
+		if _, duplicate := provided[definition.Type]; duplicate {
+			return fmt.Errorf("plugin %s: duplicate provided event %s", manifest.ID, definition.Type)
+		}
+		provided[definition.Type] = struct{}{}
+		names := make(map[string]struct{}, len(definition.Fields))
+		for _, field := range definition.Fields {
+			if !validFieldName(field.Name) {
+				return fmt.Errorf("plugin %s: event %s: invalid field name %q", manifest.ID, definition.Type, field.Name)
+			}
+			if _, duplicate := names[field.Name]; duplicate {
+				return fmt.Errorf("plugin %s: event %s: duplicate field %s", manifest.ID, definition.Type, field.Name)
+			}
+			names[field.Name] = struct{}{}
+			// The type is deliberately only checked for presence. It belongs to
+			// the vocabulary the two runtimes sharing the event agree on, not to
+			// the host, which moves the value positionally and never reads it.
+			if strings.TrimSpace(field.Type) == "" {
+				return fmt.Errorf("plugin %s: event %s: field %s has no type", manifest.ID, definition.Type, field.Name)
+			}
+		}
+	}
 	return nil
+}
+
+// validEventType requires the namespace/name form.
+//
+// The slash is what keeps a plugin from providing "block.break" and shadowing a
+// native event: no native name has one, so the two vocabularies cannot meet.
+// Enforcing it here rather than trusting convention means the collision is
+// refused at build time, on the machine that has the source.
+func validEventType(eventType string) bool {
+	namespace, name, found := strings.Cut(eventType, "/")
+	if !found || strings.Contains(name, "/") {
+		return false
+	}
+	return validDottedName(namespace) && validDottedName(name)
+}
+
+// validFieldName accepts an identifier as any of the three languages writes it,
+// which includes the camelCase a Java record component arrives as.
+func validFieldName(name string) bool {
+	if name == "" || (name[0] >= '0' && name[0] <= '9') {
+		return false
+	}
+	for _, character := range name {
+		switch {
+		case character >= 'a' && character <= 'z':
+		case character >= 'A' && character <= 'Z':
+		case character >= '0' && character <= '9':
+		case character == '_':
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 func validBundleReference(reference string) bool {
@@ -141,15 +239,20 @@ func validBundleReference(reference string) bool {
 	return cleaned == reference && cleaned != "." && cleaned != ".." && !strings.HasPrefix(cleaned, "../")
 }
 
-func validPluginID(id string) bool {
-	if id == "" || id[0] == '.' || id[len(id)-1] == '.' {
+func validPluginID(id string) bool { return validDottedName(id) }
+
+// validDottedName is the charset a plugin id and both halves of an event type
+// share: lowercase, because a name that differs only by case is a name two
+// people will spell two ways.
+func validDottedName(name string) bool {
+	if name == "" || name[0] == '.' || name[len(name)-1] == '.' {
 		return false
 	}
-	for _, character := range id {
+	for _, character := range name {
 		if character != '.' && character != '-' && character != '_' &&
 			(character < 'a' || character > 'z') && (character < '0' || character > '9') {
 			return false
 		}
 	}
-	return !strings.Contains(id, "..")
+	return !strings.Contains(name, "..")
 }
