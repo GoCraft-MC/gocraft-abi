@@ -43,12 +43,20 @@ type Subscription struct {
 // build tool has to compare this list against the one it wrote last time.
 type EventField struct {
 	Name string
-	// Type as the author declared it: "double", "PlayerRef", "[]fr.oreo.Tier".
+	// Type is a scalar, a record this manifest declares, or a list of either:
+	// "double", "fr.oreo.Tier", "[]fr.oreo.Tier".
 	//
-	// The host never resolves it. It moves values positionally, and only the
-	// two runtimes that share the type have to agree on what it means.
-	// Declaring it is still what lets a build tool refuse a subscriber compiled
-	// against another shape, before anything runs.
+	// It used to be a free string checked for presence only, on the grounds
+	// that the host moves values positionally and never reads it. That held
+	// while a field could only be a scalar, because the flat list of names and
+	// types was itself the whole shape and a build tool could compare two of
+	// them. It stops holding the moment a field is a record: the provider knows
+	// its component order and a subscriber knows its own, and a name neither
+	// side resolves compares equal while the two layouts disagree.
+	//
+	// So the vocabulary is closed and records are declared. Reading a type is
+	// still not something the host does at dispatch; it is what lets a build
+	// refuse a subscriber whose Tier puts price before name.
 	Type string
 	// Mutable reports whether a subscriber may replace this field outright.
 	//
@@ -58,6 +66,24 @@ type EventField struct {
 	// relies on when it assigns e.tiers[1].price. So this only ever answers for
 	// a path of length one; see EventDefinition.MutablePath.
 	Mutable bool
+}
+
+// EventRecord is a compound value a plugin-defined event can carry.
+//
+// Declared once and referenced by name rather than spelled inside each field
+// that uses it, so a record two events carry is described in one place — and so
+// two plugins comparing their manifests compare one description rather than
+// several copies of it that happen to agree.
+//
+// It cannot contain itself, directly or through another record. The wire is a
+// finite positional payload with no pointers, so a cycle is not a shape that
+// could be encoded; refusing it here says so at build time rather than as a
+// stack overflow in a codec.
+type EventRecord struct {
+	// Name is namespaced and dotted, e.g. "fr.oreo.Tier". No slash: that form
+	// is reserved for event types, and a record is not one.
+	Name   string
+	Fields []EventField
 }
 
 // EventDefinition is one event type a plugin declares it can emit.
@@ -109,6 +135,8 @@ type Manifest struct {
 	CommandTree   string
 	Permissions   []string
 	Subscriptions []Subscription
+	// Records are the compound values its events carry, if any.
+	Records []EventRecord
 	// Provides are the event types this plugin can emit. The host collects them
 	// across every scanned bundle before any plugin loads, which is what lets a
 	// subscription name a type whose provider has not been loaded yet.

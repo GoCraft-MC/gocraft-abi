@@ -33,8 +33,14 @@ type manifestFile struct {
 		Tree string `toml:"tree"`
 	} `toml:"commands"`
 	Events struct {
+		Types    []recordFile        `toml:"types"`
 		Provides []providedEventFile `toml:"provides"`
 	} `toml:"events"`
+}
+
+type recordFile struct {
+	Name   string           `toml:"name"`
+	Fields []eventFieldFile `toml:"fields"`
 }
 
 type providedEventFile struct {
@@ -76,17 +82,17 @@ func DecodeManifest(reader io.Reader) (Manifest, error) {
 	for _, event := range file.Subscribe.Events {
 		manifest.Subscriptions = append(manifest.Subscriptions, Subscription{Event: event, Priority: PriorityNormal})
 	}
+	for _, declared := range file.Events.Types {
+		record := EventRecord{Name: declared.Name, Fields: readFields(declared.Fields)}
+		manifest.Records = append(manifest.Records, record)
+	}
 	for _, provided := range file.Events.Provides {
 		definition := EventDefinition{
 			Type: provided.Type, Cancellable: provided.Cancellable,
 			FailClosed: provided.FailClosed,
 			Fields:     make([]EventField, 0, len(provided.Fields)),
 		}
-		for _, field := range provided.Fields {
-			definition.Fields = append(definition.Fields, EventField{
-				Name: field.Name, Type: field.Type, Mutable: field.Mutable,
-			})
-		}
+		definition.Fields = readFields(provided.Fields)
 		manifest.Provides = append(manifest.Provides, definition)
 	}
 	if err := ValidateManifest(manifest); err != nil {
@@ -159,7 +165,22 @@ func ValidateManifest(manifest Manifest) error {
 		}
 		seen[subscription.Event] = struct{}{}
 	}
+	if err := validateRecords(manifest); err != nil {
+		return err
+	}
 	return validateProvides(manifest)
+}
+
+// readFields converts one declared field list, without judging it. What a type
+// may say is validateFields; whether a record it names exists is resolveFields.
+func readFields(declared []eventFieldFile) []EventField {
+	fields := make([]EventField, 0, len(declared))
+	for _, field := range declared {
+		fields = append(fields, EventField{
+			Name: field.Name, Type: field.Type, Mutable: field.Mutable,
+		})
+	}
+	return fields
 }
 
 // validateProvides checks the event types this plugin declares it can emit.
@@ -169,6 +190,10 @@ func ValidateManifest(manifest Manifest) error {
 // questions about a set of bundles rather than about one manifest — the host
 // answers them once it has scanned them all.
 func validateProvides(manifest Manifest) error {
+	records := make(map[string]EventRecord, len(manifest.Records))
+	for _, record := range manifest.Records {
+		records[record.Name] = record
+	}
 	provided := make(map[string]struct{}, len(manifest.Provides))
 	for _, definition := range manifest.Provides {
 		if !validEventType(definition.Type) {
@@ -178,21 +203,12 @@ func validateProvides(manifest Manifest) error {
 			return fmt.Errorf("plugin %s: duplicate provided event %s", manifest.ID, definition.Type)
 		}
 		provided[definition.Type] = struct{}{}
-		names := make(map[string]struct{}, len(definition.Fields))
-		for _, field := range definition.Fields {
-			if !validFieldName(field.Name) {
-				return fmt.Errorf("plugin %s: event %s: invalid field name %q", manifest.ID, definition.Type, field.Name)
-			}
-			if _, duplicate := names[field.Name]; duplicate {
-				return fmt.Errorf("plugin %s: event %s: duplicate field %s", manifest.ID, definition.Type, field.Name)
-			}
-			names[field.Name] = struct{}{}
-			// The type is deliberately only checked for presence. It belongs to
-			// the vocabulary the two runtimes sharing the event agree on, not to
-			// the host, which moves the value positionally and never reads it.
-			if strings.TrimSpace(field.Type) == "" {
-				return fmt.Errorf("plugin %s: event %s: field %s has no type", manifest.ID, definition.Type, field.Name)
-			}
+		owner := "event " + definition.Type
+		if err := validateFields(manifest.ID, owner, definition.Fields); err != nil {
+			return err
+		}
+		if err := resolveFields(manifest.ID, owner, definition.Fields, records); err != nil {
+			return err
 		}
 	}
 	return nil
