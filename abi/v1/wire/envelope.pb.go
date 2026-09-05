@@ -98,6 +98,8 @@ type Envelope struct {
 	//	*Envelope_Shutdown
 	//	*Envelope_Invoke
 	//	*Envelope_Invoked
+	//	*Envelope_Emit
+	//	*Envelope_Emitted
 	Body          isEnvelope_Body `protobuf_oneof:"body"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -273,6 +275,24 @@ func (x *Envelope) GetInvoked() *Invoked {
 	return nil
 }
 
+func (x *Envelope) GetEmit() *Emit {
+	if x != nil {
+		if x, ok := x.Body.(*Envelope_Emit); ok {
+			return x.Emit
+		}
+	}
+	return nil
+}
+
+func (x *Envelope) GetEmitted() *Emitted {
+	if x != nil {
+		if x, ok := x.Body.(*Envelope_Emitted); ok {
+			return x.Emitted
+		}
+	}
+	return nil
+}
+
 type isEnvelope_Body interface {
 	isEnvelope_Body()
 }
@@ -340,6 +360,21 @@ type Envelope_Invoked struct {
 	Invoked *Invoked `protobuf:"bytes,15,opt,name=invoked,proto3,oneof"`
 }
 
+type Envelope_Emit struct {
+	// A plugin-defined event, published by a plugin. The only exchange the
+	// runtime starts: everything above answers something the host asked for.
+	//
+	// Sequence numbers are therefore split rather than shared. The host numbers
+	// its requests odd and a runtime numbers its own even, so the two counters
+	// cannot produce the same number and hand one side's request to a caller
+	// waiting for the other's reply.
+	Emit *Emit `protobuf:"bytes,16,opt,name=emit,proto3,oneof"`
+}
+
+type Envelope_Emitted struct {
+	Emitted *Emitted `protobuf:"bytes,17,opt,name=emitted,proto3,oneof"`
+}
+
 func (*Envelope_Hello) isEnvelope_Body() {}
 
 func (*Envelope_Welcome) isEnvelope_Body() {}
@@ -367,6 +402,10 @@ func (*Envelope_Shutdown) isEnvelope_Body() {}
 func (*Envelope_Invoke) isEnvelope_Body() {}
 
 func (*Envelope_Invoked) isEnvelope_Body() {}
+
+func (*Envelope_Emit) isEnvelope_Body() {}
+
+func (*Envelope_Emitted) isEnvelope_Body() {}
 
 // Hello announces the runtime and the ABI it was built against. A mismatch
 // makes the runtime exit rather than negotiate: a runtime that guesses is worse
@@ -514,7 +553,16 @@ type Load struct {
 	// second definition of it — free to disagree with the one the runtime binds
 	// its handlers against. Sending the path instead is what the host already
 	// does for entry: it read the manifest, so the runtime does not have to.
-	CommandTree   string `protobuf:"bytes,5,opt,name=command_tree,json=commandTree,proto3" json:"command_tree,omitempty"`
+	CommandTree string `protobuf:"bytes,5,opt,name=command_tree,json=commandTree,proto3" json:"command_tree,omitempty"`
+	// The plugin-defined event types this plugin provides or subscribes to, with
+	// the id the host assigned each of them. Empty for a plugin that touches
+	// none, which is every plugin until one declares [[events.provides]].
+	//
+	// Sent per plugin rather than once per runtime, because a runtime has no use
+	// for the id of an event none of its plugins can see, and because the host
+	// assigns the ids from the full set of installed manifests — a fact that is
+	// only settled once every bundle has been scanned.
+	EventTypes    []*EventBinding `protobuf:"bytes,6,rep,name=event_types,json=eventTypes,proto3" json:"event_types,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -584,6 +632,76 @@ func (x *Load) GetCommandTree() string {
 	return ""
 }
 
+func (x *Load) GetEventTypes() []*EventBinding {
+	if x != nil {
+		return x.EventTypes
+	}
+	return nil
+}
+
+// EventBinding is one plugin-defined event type and the number standing in for
+// its name on the wire.
+//
+// The name and the id, and deliberately nothing else. The layout — which field
+// is at which index, and what it is called — is the runtime's own: it comes
+// from the class the author compiled or the table they wrote by hand, and the
+// manifest is what the build compares the two against. Re-sending it here would
+// be a second copy of the layout at runtime, free to disagree with the one the
+// codec was generated from.
+type EventBinding struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Never zero: abi/v1 reserves 0 in Event.type_id for native events.
+	TypeId uint32 `protobuf:"varint,1,opt,name=type_id,json=typeId,proto3" json:"type_id,omitempty"`
+	// As a manifest spells it, e.g. "fr.oreo.shop/purchase".
+	Type          string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EventBinding) Reset() {
+	*x = EventBinding{}
+	mi := &file_abi_v1_envelope_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EventBinding) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventBinding) ProtoMessage() {}
+
+func (x *EventBinding) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_envelope_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EventBinding.ProtoReflect.Descriptor instead.
+func (*EventBinding) Descriptor() ([]byte, []int) {
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *EventBinding) GetTypeId() uint32 {
+	if x != nil {
+		return x.TypeId
+	}
+	return 0
+}
+
+func (x *EventBinding) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
 // Loaded reports what the plugin actually registered, which the host checks
 // against the manifest it validated. A plugin that subscribes to an event it
 // never declared is a bug, not a feature.
@@ -597,7 +715,7 @@ type Loaded struct {
 
 func (x *Loaded) Reset() {
 	*x = Loaded{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[4]
+	mi := &file_abi_v1_envelope_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -609,7 +727,7 @@ func (x *Loaded) String() string {
 func (*Loaded) ProtoMessage() {}
 
 func (x *Loaded) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[4]
+	mi := &file_abi_v1_envelope_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -622,7 +740,7 @@ func (x *Loaded) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Loaded.ProtoReflect.Descriptor instead.
 func (*Loaded) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{4}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Loaded) GetPluginId() string {
@@ -652,7 +770,7 @@ type Fail struct {
 
 func (x *Fail) Reset() {
 	*x = Fail{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[5]
+	mi := &file_abi_v1_envelope_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -664,7 +782,7 @@ func (x *Fail) String() string {
 func (*Fail) ProtoMessage() {}
 
 func (x *Fail) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[5]
+	mi := &file_abi_v1_envelope_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -677,7 +795,7 @@ func (x *Fail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Fail.ProtoReflect.Descriptor instead.
 func (*Fail) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{5}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Fail) GetPluginId() string {
@@ -703,7 +821,7 @@ type Ready struct {
 
 func (x *Ready) Reset() {
 	*x = Ready{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[6]
+	mi := &file_abi_v1_envelope_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -715,7 +833,7 @@ func (x *Ready) String() string {
 func (*Ready) ProtoMessage() {}
 
 func (x *Ready) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[6]
+	mi := &file_abi_v1_envelope_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -728,7 +846,7 @@ func (x *Ready) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ready.ProtoReflect.Descriptor instead.
 func (*Ready) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{6}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{7}
 }
 
 type Unload struct {
@@ -740,7 +858,7 @@ type Unload struct {
 
 func (x *Unload) Reset() {
 	*x = Unload{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[7]
+	mi := &file_abi_v1_envelope_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -752,7 +870,7 @@ func (x *Unload) String() string {
 func (*Unload) ProtoMessage() {}
 
 func (x *Unload) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[7]
+	mi := &file_abi_v1_envelope_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -765,7 +883,7 @@ func (x *Unload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Unload.ProtoReflect.Descriptor instead.
 func (*Unload) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{7}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Unload) GetPluginId() string {
@@ -788,7 +906,7 @@ type Dispatch struct {
 
 func (x *Dispatch) Reset() {
 	*x = Dispatch{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[8]
+	mi := &file_abi_v1_envelope_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -800,7 +918,7 @@ func (x *Dispatch) String() string {
 func (*Dispatch) ProtoMessage() {}
 
 func (x *Dispatch) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[8]
+	mi := &file_abi_v1_envelope_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -813,7 +931,7 @@ func (x *Dispatch) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Dispatch.ProtoReflect.Descriptor instead.
 func (*Dispatch) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{8}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Dispatch) GetPluginId() string {
@@ -838,7 +956,7 @@ type Ping struct {
 
 func (x *Ping) Reset() {
 	*x = Ping{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[9]
+	mi := &file_abi_v1_envelope_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -850,7 +968,7 @@ func (x *Ping) String() string {
 func (*Ping) ProtoMessage() {}
 
 func (x *Ping) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[9]
+	mi := &file_abi_v1_envelope_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -863,7 +981,7 @@ func (x *Ping) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ping.ProtoReflect.Descriptor instead.
 func (*Ping) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{9}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{10}
 }
 
 type Pong struct {
@@ -874,7 +992,7 @@ type Pong struct {
 
 func (x *Pong) Reset() {
 	*x = Pong{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[10]
+	mi := &file_abi_v1_envelope_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -886,7 +1004,7 @@ func (x *Pong) String() string {
 func (*Pong) ProtoMessage() {}
 
 func (x *Pong) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[10]
+	mi := &file_abi_v1_envelope_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -899,7 +1017,7 @@ func (x *Pong) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Pong.ProtoReflect.Descriptor instead.
 func (*Pong) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{10}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{11}
 }
 
 // Shutdown asks for an orderly stop. The host still kills the process if it
@@ -912,7 +1030,7 @@ type Shutdown struct {
 
 func (x *Shutdown) Reset() {
 	*x = Shutdown{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[11]
+	mi := &file_abi_v1_envelope_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -924,7 +1042,7 @@ func (x *Shutdown) String() string {
 func (*Shutdown) ProtoMessage() {}
 
 func (x *Shutdown) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[11]
+	mi := &file_abi_v1_envelope_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -937,7 +1055,7 @@ func (x *Shutdown) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Shutdown.ProtoReflect.Descriptor instead.
 func (*Shutdown) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{11}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{12}
 }
 
 // Value is the positional value carried by events, verdicts and host calls.
@@ -963,7 +1081,7 @@ type Value struct {
 
 func (x *Value) Reset() {
 	*x = Value{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[12]
+	mi := &file_abi_v1_envelope_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -975,7 +1093,7 @@ func (x *Value) String() string {
 func (*Value) ProtoMessage() {}
 
 func (x *Value) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[12]
+	mi := &file_abi_v1_envelope_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -988,7 +1106,7 @@ func (x *Value) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Value.ProtoReflect.Descriptor instead.
 func (*Value) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{12}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Value) GetKind() isValue_Kind {
@@ -1102,7 +1220,7 @@ type ValueList struct {
 
 func (x *ValueList) Reset() {
 	*x = ValueList{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[13]
+	mi := &file_abi_v1_envelope_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1114,7 +1232,7 @@ func (x *ValueList) String() string {
 func (*ValueList) ProtoMessage() {}
 
 func (x *ValueList) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[13]
+	mi := &file_abi_v1_envelope_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1127,7 +1245,7 @@ func (x *ValueList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValueList.ProtoReflect.Descriptor instead.
 func (*ValueList) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{13}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ValueList) GetValues() []*Value {
@@ -1154,7 +1272,7 @@ type Event struct {
 
 func (x *Event) Reset() {
 	*x = Event{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[14]
+	mi := &file_abi_v1_envelope_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1166,7 +1284,7 @@ func (x *Event) String() string {
 func (*Event) ProtoMessage() {}
 
 func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[14]
+	mi := &file_abi_v1_envelope_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1179,7 +1297,7 @@ func (x *Event) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Event.ProtoReflect.Descriptor instead.
 func (*Event) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{14}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *Event) GetType() string {
@@ -1223,7 +1341,7 @@ type Mutation struct {
 
 func (x *Mutation) Reset() {
 	*x = Mutation{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[15]
+	mi := &file_abi_v1_envelope_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1235,7 +1353,7 @@ func (x *Mutation) String() string {
 func (*Mutation) ProtoMessage() {}
 
 func (x *Mutation) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[15]
+	mi := &file_abi_v1_envelope_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1248,7 +1366,7 @@ func (x *Mutation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mutation.ProtoReflect.Descriptor instead.
 func (*Mutation) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{15}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *Mutation) GetPath() []uint32 {
@@ -1278,7 +1396,7 @@ type HostCall struct {
 
 func (x *HostCall) Reset() {
 	*x = HostCall{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[16]
+	mi := &file_abi_v1_envelope_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1290,7 +1408,7 @@ func (x *HostCall) String() string {
 func (*HostCall) ProtoMessage() {}
 
 func (x *HostCall) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[16]
+	mi := &file_abi_v1_envelope_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1303,7 +1421,7 @@ func (x *HostCall) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HostCall.ProtoReflect.Descriptor instead.
 func (*HostCall) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{16}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *HostCall) GetType() string {
@@ -1332,7 +1450,7 @@ type Verdict struct {
 
 func (x *Verdict) Reset() {
 	*x = Verdict{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[17]
+	mi := &file_abi_v1_envelope_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1344,7 +1462,7 @@ func (x *Verdict) String() string {
 func (*Verdict) ProtoMessage() {}
 
 func (x *Verdict) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[17]
+	mi := &file_abi_v1_envelope_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1357,7 +1475,7 @@ func (x *Verdict) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Verdict.ProtoReflect.Descriptor instead.
 func (*Verdict) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{17}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *Verdict) GetCancelled() bool {
@@ -1402,7 +1520,7 @@ type Invoke struct {
 
 func (x *Invoke) Reset() {
 	*x = Invoke{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[18]
+	mi := &file_abi_v1_envelope_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1414,7 +1532,7 @@ func (x *Invoke) String() string {
 func (*Invoke) ProtoMessage() {}
 
 func (x *Invoke) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[18]
+	mi := &file_abi_v1_envelope_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1427,7 +1545,7 @@ func (x *Invoke) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Invoke.ProtoReflect.Descriptor instead.
 func (*Invoke) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{18}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *Invoke) GetPluginId() string {
@@ -1483,7 +1601,7 @@ type CommandSender struct {
 
 func (x *CommandSender) Reset() {
 	*x = CommandSender{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[19]
+	mi := &file_abi_v1_envelope_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1495,7 +1613,7 @@ func (x *CommandSender) String() string {
 func (*CommandSender) ProtoMessage() {}
 
 func (x *CommandSender) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[19]
+	mi := &file_abi_v1_envelope_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1508,7 +1626,7 @@ func (x *CommandSender) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandSender.ProtoReflect.Descriptor instead.
 func (*CommandSender) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{19}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CommandSender) GetPlayer() *Value {
@@ -1554,7 +1672,7 @@ type CommandArgument struct {
 
 func (x *CommandArgument) Reset() {
 	*x = CommandArgument{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[20]
+	mi := &file_abi_v1_envelope_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1566,7 +1684,7 @@ func (x *CommandArgument) String() string {
 func (*CommandArgument) ProtoMessage() {}
 
 func (x *CommandArgument) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[20]
+	mi := &file_abi_v1_envelope_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1579,7 +1697,7 @@ func (x *CommandArgument) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandArgument.ProtoReflect.Descriptor instead.
 func (*CommandArgument) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{20}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CommandArgument) GetName() string {
@@ -1603,6 +1721,150 @@ func (x *CommandArgument) GetValue() *Value {
 	return nil
 }
 
+// Emit publishes a plugin-defined event and waits for what the subscribers did
+// to it. Runtime → host, the one exchange a runtime starts.
+//
+// The host owns the dispatch for the same reason it owns native events:
+// subscribers span runtimes, they run in priority order, and cancellation has
+// to be arbitrated by something that is not one of them.
+type Emit struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Who is emitting. The host skips this plugin's own subscribers — a plugin
+	// hearing its own event back would double-count it, and §10 makes the
+	// emitter's copy of the object the thing the mutations are replayed into.
+	PluginId string `protobuf:"bytes,1,opt,name=plugin_id,json=pluginId,proto3" json:"plugin_id,omitempty"`
+	// From the EventBinding table this plugin was loaded with.
+	TypeId uint32 `protobuf:"varint,2,opt,name=type_id,json=typeId,proto3" json:"type_id,omitempty"`
+	// Positional, in the order the manifest declares. No names: the layout is
+	// agreed at build time, so paying for names here would be paying per emit for
+	// something both sides already know.
+	Fields        []*Value `protobuf:"bytes,3,rep,name=fields,proto3" json:"fields,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Emit) Reset() {
+	*x = Emit{}
+	mi := &file_abi_v1_envelope_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Emit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Emit) ProtoMessage() {}
+
+func (x *Emit) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_envelope_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Emit.ProtoReflect.Descriptor instead.
+func (*Emit) Descriptor() ([]byte, []int) {
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *Emit) GetPluginId() string {
+	if x != nil {
+		return x.PluginId
+	}
+	return ""
+}
+
+func (x *Emit) GetTypeId() uint32 {
+	if x != nil {
+		return x.TypeId
+	}
+	return 0
+}
+
+func (x *Emit) GetFields() []*Value {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+// Emitted answers one Emit. Host → runtime, correlated by the seq the runtime
+// chose.
+type Emitted struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Empty means the event was dispatched. Anything else is a fault in the
+	// emitting plugin — an unknown type id, or a type it does not provide — and
+	// is reported rather than fatal: one plugin's bug must not take down the
+	// runtime its neighbours are living in.
+	Error string `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+	// A subscriber cancelled, or a fail-closed event lost one. The emitter is
+	// expected to abandon whatever it was about to do.
+	Cancelled bool `protobuf:"varint,2,opt,name=cancelled,proto3" json:"cancelled,omitempty"`
+	// What the subscribers changed, as a diff against the fields that were sent.
+	// The runtime replays these into the emitter's own object, which is what
+	// makes a cross-process, cross-language dispatch feel in-process.
+	Mutations     []*Mutation `protobuf:"bytes,3,rep,name=mutations,proto3" json:"mutations,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Emitted) Reset() {
+	*x = Emitted{}
+	mi := &file_abi_v1_envelope_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Emitted) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Emitted) ProtoMessage() {}
+
+func (x *Emitted) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_envelope_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Emitted.ProtoReflect.Descriptor instead.
+func (*Emitted) Descriptor() ([]byte, []int) {
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *Emitted) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *Emitted) GetCancelled() bool {
+	if x != nil {
+		return x.Cancelled
+	}
+	return false
+}
+
+func (x *Emitted) GetMutations() []*Mutation {
+	if x != nil {
+		return x.Mutations
+	}
+	return nil
+}
+
 // Invoked answers one Invoke. It carries no plugin id: like Verdict, it is
 // correlated by seq.
 type Invoked struct {
@@ -1622,7 +1884,7 @@ type Invoked struct {
 
 func (x *Invoked) Reset() {
 	*x = Invoked{}
-	mi := &file_abi_v1_envelope_proto_msgTypes[21]
+	mi := &file_abi_v1_envelope_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1634,7 +1896,7 @@ func (x *Invoked) String() string {
 func (*Invoked) ProtoMessage() {}
 
 func (x *Invoked) ProtoReflect() protoreflect.Message {
-	mi := &file_abi_v1_envelope_proto_msgTypes[21]
+	mi := &file_abi_v1_envelope_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1647,7 +1909,7 @@ func (x *Invoked) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Invoked.ProtoReflect.Descriptor instead.
 func (*Invoked) Descriptor() ([]byte, []int) {
-	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{21}
+	return file_abi_v1_envelope_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *Invoked) GetError() string {
@@ -1668,7 +1930,7 @@ var File_abi_v1_envelope_proto protoreflect.FileDescriptor
 
 const file_abi_v1_envelope_proto_rawDesc = "" +
 	"\n" +
-	"\x15abi/v1/envelope.proto\x12\x0egocraft.abi.v1\x1a\x15abi/v1/commands.proto\"\xd7\x05\n" +
+	"\x15abi/v1/envelope.proto\x12\x0egocraft.abi.v1\x1a\x15abi/v1/commands.proto\"\xb8\x06\n" +
 	"\bEnvelope\x12\x10\n" +
 	"\x03seq\x18\x01 \x01(\x04R\x03seq\x12-\n" +
 	"\x05hello\x18\x02 \x01(\v2\x15.gocraft.abi.v1.HelloH\x00R\x05hello\x123\n" +
@@ -1685,7 +1947,9 @@ const file_abi_v1_envelope_proto_rawDesc = "" +
 	"\x04pong\x18\f \x01(\v2\x14.gocraft.abi.v1.PongH\x00R\x04pong\x126\n" +
 	"\bshutdown\x18\r \x01(\v2\x18.gocraft.abi.v1.ShutdownH\x00R\bshutdown\x120\n" +
 	"\x06invoke\x18\x0e \x01(\v2\x16.gocraft.abi.v1.InvokeH\x00R\x06invoke\x123\n" +
-	"\ainvoked\x18\x0f \x01(\v2\x17.gocraft.abi.v1.InvokedH\x00R\ainvokedB\x06\n" +
+	"\ainvoked\x18\x0f \x01(\v2\x17.gocraft.abi.v1.InvokedH\x00R\ainvoked\x12*\n" +
+	"\x04emit\x18\x10 \x01(\v2\x14.gocraft.abi.v1.EmitH\x00R\x04emit\x123\n" +
+	"\aemitted\x18\x11 \x01(\v2\x17.gocraft.abi.v1.EmittedH\x00R\aemittedB\x06\n" +
 	"\x04body\"3\n" +
 	"\x05Hello\x12\x10\n" +
 	"\x03abi\x18\x01 \x01(\rR\x03abi\x12\x18\n" +
@@ -1693,14 +1957,19 @@ const file_abi_v1_envelope_proto_rawDesc = "" +
 	"\aWelcome\x12\x10\n" +
 	"\x03abi\x18\x01 \x01(\rR\x03abi\x12\x1b\n" +
 	"\ttick_rate\x18\x02 \x01(\rR\btickRate\x12&\n" +
-	"\x0fevent_budget_ms\x18\x03 \x01(\rR\reventBudgetMs\"\xa4\x01\n" +
+	"\x0fevent_budget_ms\x18\x03 \x01(\rR\reventBudgetMs\"\xe3\x01\n" +
 	"\x04Load\x12\x1b\n" +
 	"\tplugin_id\x18\x01 \x01(\tR\bpluginId\x12\x1f\n" +
 	"\vbundle_path\x18\x02 \x01(\tR\n" +
 	"bundlePath\x12\x14\n" +
 	"\x05entry\x18\x03 \x01(\tR\x05entry\x12%\n" +
 	"\x0edata_directory\x18\x04 \x01(\tR\rdataDirectory\x12!\n" +
-	"\fcommand_tree\x18\x05 \x01(\tR\vcommandTree\"=\n" +
+	"\fcommand_tree\x18\x05 \x01(\tR\vcommandTree\x12=\n" +
+	"\vevent_types\x18\x06 \x03(\v2\x1c.gocraft.abi.v1.EventBindingR\n" +
+	"eventTypes\";\n" +
+	"\fEventBinding\x12\x17\n" +
+	"\atype_id\x18\x01 \x01(\rR\x06typeId\x12\x12\n" +
+	"\x04type\x18\x02 \x01(\tR\x04type\"=\n" +
 	"\x06Loaded\x12\x1b\n" +
 	"\tplugin_id\x18\x01 \x01(\tR\bpluginId\x12\x16\n" +
 	"\x06events\x18\x02 \x03(\tR\x06events\";\n" +
@@ -1759,7 +2028,15 @@ const file_abi_v1_envelope_proto_rawDesc = "" +
 	"\x0fCommandArgument\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
 	"\x04type\x18\x02 \x01(\x0e2#.gocraft.abi.v1.CommandArgumentTypeR\x04type\x12+\n" +
-	"\x05value\x18\x03 \x01(\v2\x15.gocraft.abi.v1.ValueR\x05value\"S\n" +
+	"\x05value\x18\x03 \x01(\v2\x15.gocraft.abi.v1.ValueR\x05value\"k\n" +
+	"\x04Emit\x12\x1b\n" +
+	"\tplugin_id\x18\x01 \x01(\tR\bpluginId\x12\x17\n" +
+	"\atype_id\x18\x02 \x01(\rR\x06typeId\x12-\n" +
+	"\x06fields\x18\x03 \x03(\v2\x15.gocraft.abi.v1.ValueR\x06fields\"u\n" +
+	"\aEmitted\x12\x14\n" +
+	"\x05error\x18\x01 \x01(\tR\x05error\x12\x1c\n" +
+	"\tcancelled\x18\x02 \x01(\bR\tcancelled\x126\n" +
+	"\tmutations\x18\x03 \x03(\v2\x18.gocraft.abi.v1.MutationR\tmutations\"S\n" +
 	"\aInvoked\x12\x14\n" +
 	"\x05error\x18\x01 \x01(\tR\x05error\x122\n" +
 	"\aeffects\x18\x02 \x03(\v2\x18.gocraft.abi.v1.HostCallR\aeffects*b\n" +
@@ -1782,69 +2059,77 @@ func file_abi_v1_envelope_proto_rawDescGZIP() []byte {
 }
 
 var file_abi_v1_envelope_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_abi_v1_envelope_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_abi_v1_envelope_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_abi_v1_envelope_proto_goTypes = []any{
 	(FailurePolicy)(0),       // 0: gocraft.abi.v1.FailurePolicy
 	(*Envelope)(nil),         // 1: gocraft.abi.v1.Envelope
 	(*Hello)(nil),            // 2: gocraft.abi.v1.Hello
 	(*Welcome)(nil),          // 3: gocraft.abi.v1.Welcome
 	(*Load)(nil),             // 4: gocraft.abi.v1.Load
-	(*Loaded)(nil),           // 5: gocraft.abi.v1.Loaded
-	(*Fail)(nil),             // 6: gocraft.abi.v1.Fail
-	(*Ready)(nil),            // 7: gocraft.abi.v1.Ready
-	(*Unload)(nil),           // 8: gocraft.abi.v1.Unload
-	(*Dispatch)(nil),         // 9: gocraft.abi.v1.Dispatch
-	(*Ping)(nil),             // 10: gocraft.abi.v1.Ping
-	(*Pong)(nil),             // 11: gocraft.abi.v1.Pong
-	(*Shutdown)(nil),         // 12: gocraft.abi.v1.Shutdown
-	(*Value)(nil),            // 13: gocraft.abi.v1.Value
-	(*ValueList)(nil),        // 14: gocraft.abi.v1.ValueList
-	(*Event)(nil),            // 15: gocraft.abi.v1.Event
-	(*Mutation)(nil),         // 16: gocraft.abi.v1.Mutation
-	(*HostCall)(nil),         // 17: gocraft.abi.v1.HostCall
-	(*Verdict)(nil),          // 18: gocraft.abi.v1.Verdict
-	(*Invoke)(nil),           // 19: gocraft.abi.v1.Invoke
-	(*CommandSender)(nil),    // 20: gocraft.abi.v1.CommandSender
-	(*CommandArgument)(nil),  // 21: gocraft.abi.v1.CommandArgument
-	(*Invoked)(nil),          // 22: gocraft.abi.v1.Invoked
-	(CommandArgumentType)(0), // 23: gocraft.abi.v1.CommandArgumentType
+	(*EventBinding)(nil),     // 5: gocraft.abi.v1.EventBinding
+	(*Loaded)(nil),           // 6: gocraft.abi.v1.Loaded
+	(*Fail)(nil),             // 7: gocraft.abi.v1.Fail
+	(*Ready)(nil),            // 8: gocraft.abi.v1.Ready
+	(*Unload)(nil),           // 9: gocraft.abi.v1.Unload
+	(*Dispatch)(nil),         // 10: gocraft.abi.v1.Dispatch
+	(*Ping)(nil),             // 11: gocraft.abi.v1.Ping
+	(*Pong)(nil),             // 12: gocraft.abi.v1.Pong
+	(*Shutdown)(nil),         // 13: gocraft.abi.v1.Shutdown
+	(*Value)(nil),            // 14: gocraft.abi.v1.Value
+	(*ValueList)(nil),        // 15: gocraft.abi.v1.ValueList
+	(*Event)(nil),            // 16: gocraft.abi.v1.Event
+	(*Mutation)(nil),         // 17: gocraft.abi.v1.Mutation
+	(*HostCall)(nil),         // 18: gocraft.abi.v1.HostCall
+	(*Verdict)(nil),          // 19: gocraft.abi.v1.Verdict
+	(*Invoke)(nil),           // 20: gocraft.abi.v1.Invoke
+	(*CommandSender)(nil),    // 21: gocraft.abi.v1.CommandSender
+	(*CommandArgument)(nil),  // 22: gocraft.abi.v1.CommandArgument
+	(*Emit)(nil),             // 23: gocraft.abi.v1.Emit
+	(*Emitted)(nil),          // 24: gocraft.abi.v1.Emitted
+	(*Invoked)(nil),          // 25: gocraft.abi.v1.Invoked
+	(CommandArgumentType)(0), // 26: gocraft.abi.v1.CommandArgumentType
 }
 var file_abi_v1_envelope_proto_depIdxs = []int32{
 	2,  // 0: gocraft.abi.v1.Envelope.hello:type_name -> gocraft.abi.v1.Hello
 	3,  // 1: gocraft.abi.v1.Envelope.welcome:type_name -> gocraft.abi.v1.Welcome
 	4,  // 2: gocraft.abi.v1.Envelope.load:type_name -> gocraft.abi.v1.Load
-	5,  // 3: gocraft.abi.v1.Envelope.loaded:type_name -> gocraft.abi.v1.Loaded
-	6,  // 4: gocraft.abi.v1.Envelope.fail:type_name -> gocraft.abi.v1.Fail
-	7,  // 5: gocraft.abi.v1.Envelope.ready:type_name -> gocraft.abi.v1.Ready
-	8,  // 6: gocraft.abi.v1.Envelope.unload:type_name -> gocraft.abi.v1.Unload
-	9,  // 7: gocraft.abi.v1.Envelope.dispatch:type_name -> gocraft.abi.v1.Dispatch
-	18, // 8: gocraft.abi.v1.Envelope.verdict:type_name -> gocraft.abi.v1.Verdict
-	10, // 9: gocraft.abi.v1.Envelope.ping:type_name -> gocraft.abi.v1.Ping
-	11, // 10: gocraft.abi.v1.Envelope.pong:type_name -> gocraft.abi.v1.Pong
-	12, // 11: gocraft.abi.v1.Envelope.shutdown:type_name -> gocraft.abi.v1.Shutdown
-	19, // 12: gocraft.abi.v1.Envelope.invoke:type_name -> gocraft.abi.v1.Invoke
-	22, // 13: gocraft.abi.v1.Envelope.invoked:type_name -> gocraft.abi.v1.Invoked
-	15, // 14: gocraft.abi.v1.Dispatch.event:type_name -> gocraft.abi.v1.Event
-	14, // 15: gocraft.abi.v1.Value.list_value:type_name -> gocraft.abi.v1.ValueList
-	13, // 16: gocraft.abi.v1.ValueList.values:type_name -> gocraft.abi.v1.Value
-	13, // 17: gocraft.abi.v1.Event.fields:type_name -> gocraft.abi.v1.Value
-	0,  // 18: gocraft.abi.v1.Event.on_failure:type_name -> gocraft.abi.v1.FailurePolicy
-	13, // 19: gocraft.abi.v1.Mutation.value:type_name -> gocraft.abi.v1.Value
-	13, // 20: gocraft.abi.v1.HostCall.fields:type_name -> gocraft.abi.v1.Value
-	16, // 21: gocraft.abi.v1.Verdict.mutations:type_name -> gocraft.abi.v1.Mutation
-	17, // 22: gocraft.abi.v1.Verdict.effects:type_name -> gocraft.abi.v1.HostCall
-	20, // 23: gocraft.abi.v1.Invoke.sender:type_name -> gocraft.abi.v1.CommandSender
-	21, // 24: gocraft.abi.v1.Invoke.arguments:type_name -> gocraft.abi.v1.CommandArgument
-	13, // 25: gocraft.abi.v1.CommandSender.player:type_name -> gocraft.abi.v1.Value
-	13, // 26: gocraft.abi.v1.CommandSender.permissions:type_name -> gocraft.abi.v1.Value
-	23, // 27: gocraft.abi.v1.CommandArgument.type:type_name -> gocraft.abi.v1.CommandArgumentType
-	13, // 28: gocraft.abi.v1.CommandArgument.value:type_name -> gocraft.abi.v1.Value
-	17, // 29: gocraft.abi.v1.Invoked.effects:type_name -> gocraft.abi.v1.HostCall
-	30, // [30:30] is the sub-list for method output_type
-	30, // [30:30] is the sub-list for method input_type
-	30, // [30:30] is the sub-list for extension type_name
-	30, // [30:30] is the sub-list for extension extendee
-	0,  // [0:30] is the sub-list for field type_name
+	6,  // 3: gocraft.abi.v1.Envelope.loaded:type_name -> gocraft.abi.v1.Loaded
+	7,  // 4: gocraft.abi.v1.Envelope.fail:type_name -> gocraft.abi.v1.Fail
+	8,  // 5: gocraft.abi.v1.Envelope.ready:type_name -> gocraft.abi.v1.Ready
+	9,  // 6: gocraft.abi.v1.Envelope.unload:type_name -> gocraft.abi.v1.Unload
+	10, // 7: gocraft.abi.v1.Envelope.dispatch:type_name -> gocraft.abi.v1.Dispatch
+	19, // 8: gocraft.abi.v1.Envelope.verdict:type_name -> gocraft.abi.v1.Verdict
+	11, // 9: gocraft.abi.v1.Envelope.ping:type_name -> gocraft.abi.v1.Ping
+	12, // 10: gocraft.abi.v1.Envelope.pong:type_name -> gocraft.abi.v1.Pong
+	13, // 11: gocraft.abi.v1.Envelope.shutdown:type_name -> gocraft.abi.v1.Shutdown
+	20, // 12: gocraft.abi.v1.Envelope.invoke:type_name -> gocraft.abi.v1.Invoke
+	25, // 13: gocraft.abi.v1.Envelope.invoked:type_name -> gocraft.abi.v1.Invoked
+	23, // 14: gocraft.abi.v1.Envelope.emit:type_name -> gocraft.abi.v1.Emit
+	24, // 15: gocraft.abi.v1.Envelope.emitted:type_name -> gocraft.abi.v1.Emitted
+	5,  // 16: gocraft.abi.v1.Load.event_types:type_name -> gocraft.abi.v1.EventBinding
+	16, // 17: gocraft.abi.v1.Dispatch.event:type_name -> gocraft.abi.v1.Event
+	15, // 18: gocraft.abi.v1.Value.list_value:type_name -> gocraft.abi.v1.ValueList
+	14, // 19: gocraft.abi.v1.ValueList.values:type_name -> gocraft.abi.v1.Value
+	14, // 20: gocraft.abi.v1.Event.fields:type_name -> gocraft.abi.v1.Value
+	0,  // 21: gocraft.abi.v1.Event.on_failure:type_name -> gocraft.abi.v1.FailurePolicy
+	14, // 22: gocraft.abi.v1.Mutation.value:type_name -> gocraft.abi.v1.Value
+	14, // 23: gocraft.abi.v1.HostCall.fields:type_name -> gocraft.abi.v1.Value
+	17, // 24: gocraft.abi.v1.Verdict.mutations:type_name -> gocraft.abi.v1.Mutation
+	18, // 25: gocraft.abi.v1.Verdict.effects:type_name -> gocraft.abi.v1.HostCall
+	21, // 26: gocraft.abi.v1.Invoke.sender:type_name -> gocraft.abi.v1.CommandSender
+	22, // 27: gocraft.abi.v1.Invoke.arguments:type_name -> gocraft.abi.v1.CommandArgument
+	14, // 28: gocraft.abi.v1.CommandSender.player:type_name -> gocraft.abi.v1.Value
+	14, // 29: gocraft.abi.v1.CommandSender.permissions:type_name -> gocraft.abi.v1.Value
+	26, // 30: gocraft.abi.v1.CommandArgument.type:type_name -> gocraft.abi.v1.CommandArgumentType
+	14, // 31: gocraft.abi.v1.CommandArgument.value:type_name -> gocraft.abi.v1.Value
+	14, // 32: gocraft.abi.v1.Emit.fields:type_name -> gocraft.abi.v1.Value
+	17, // 33: gocraft.abi.v1.Emitted.mutations:type_name -> gocraft.abi.v1.Mutation
+	18, // 34: gocraft.abi.v1.Invoked.effects:type_name -> gocraft.abi.v1.HostCall
+	35, // [35:35] is the sub-list for method output_type
+	35, // [35:35] is the sub-list for method input_type
+	35, // [35:35] is the sub-list for extension type_name
+	35, // [35:35] is the sub-list for extension extendee
+	0,  // [0:35] is the sub-list for field type_name
 }
 
 func init() { file_abi_v1_envelope_proto_init() }
@@ -1868,8 +2153,10 @@ func file_abi_v1_envelope_proto_init() {
 		(*Envelope_Shutdown)(nil),
 		(*Envelope_Invoke)(nil),
 		(*Envelope_Invoked)(nil),
+		(*Envelope_Emit)(nil),
+		(*Envelope_Emitted)(nil),
 	}
-	file_abi_v1_envelope_proto_msgTypes[12].OneofWrappers = []any{
+	file_abi_v1_envelope_proto_msgTypes[13].OneofWrappers = []any{
 		(*Value_BoolValue)(nil),
 		(*Value_Int64Value)(nil),
 		(*Value_DoubleValue)(nil),
@@ -1883,7 +2170,7 @@ func file_abi_v1_envelope_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_abi_v1_envelope_proto_rawDesc), len(file_abi_v1_envelope_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   22,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

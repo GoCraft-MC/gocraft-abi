@@ -54,11 +54,21 @@ message Envelope {
     // Command invocation. Not the hot path: a person typing, at typing speed.
     Invoke invoke = 14;
     Invoked invoked = 15;
+
+    // A plugin-defined event, published by a plugin. The only exchange the
+    // runtime starts: everything above answers something the host asked for.
+    //
+    // Sequence numbers are therefore split rather than shared. The host numbers
+    // its requests odd and a runtime numbers its own even, so the two counters
+    // cannot produce the same number and hand one side's request to a caller
+    // waiting for the other's reply.
+    Emit emit = 16;
+    Emitted emitted = 17;
   }
 
-  // 16 onward are free for service calls and host-call results. They are left
-  // undesigned rather than half-specified: adding a variant to a oneof is
-  // backward compatible, changing one is not.
+  // 18 onward are free for service calls. They are left undesigned rather than
+  // half-specified: adding a variant to a oneof is backward compatible,
+  // changing one is not.
 }
 
 // Hello announces the runtime and the ABI it was built against. A mismatch
@@ -108,6 +118,32 @@ message Load {
   // its handlers against. Sending the path instead is what the host already
   // does for entry: it read the manifest, so the runtime does not have to.
   string command_tree = 5;
+
+  // The plugin-defined event types this plugin provides or subscribes to, with
+  // the id the host assigned each of them. Empty for a plugin that touches
+  // none, which is every plugin until one declares [[events.provides]].
+  //
+  // Sent per plugin rather than once per runtime, because a runtime has no use
+  // for the id of an event none of its plugins can see, and because the host
+  // assigns the ids from the full set of installed manifests — a fact that is
+  // only settled once every bundle has been scanned.
+  repeated EventBinding event_types = 6;
+}
+
+// EventBinding is one plugin-defined event type and the number standing in for
+// its name on the wire.
+//
+// The name and the id, and deliberately nothing else. The layout — which field
+// is at which index, and what it is called — is the runtime's own: it comes
+// from the class the author compiled or the table they wrote by hand, and the
+// manifest is what the build compares the two against. Re-sending it here would
+// be a second copy of the layout at runtime, free to disagree with the one the
+// codec was generated from.
+message EventBinding {
+  // Never zero: abi/v1 reserves 0 in Event.type_id for native events.
+  uint32 type_id = 1;
+  // As a manifest spells it, e.g. "fr.oreo.shop/purchase".
+  string type = 2;
 }
 
 // Loaded reports what the plugin actually registered, which the host checks
@@ -266,6 +302,42 @@ message CommandArgument {
   // refused by the runtime rather than reading a zero value.
   CommandArgumentType type = 2;
   Value value = 3;
+}
+
+// Emit publishes a plugin-defined event and waits for what the subscribers did
+// to it. Runtime → host, the one exchange a runtime starts.
+//
+// The host owns the dispatch for the same reason it owns native events:
+// subscribers span runtimes, they run in priority order, and cancellation has
+// to be arbitrated by something that is not one of them.
+message Emit {
+  // Who is emitting. The host skips this plugin's own subscribers — a plugin
+  // hearing its own event back would double-count it, and §10 makes the
+  // emitter's copy of the object the thing the mutations are replayed into.
+  string plugin_id = 1;
+  // From the EventBinding table this plugin was loaded with.
+  uint32 type_id = 2;
+  // Positional, in the order the manifest declares. No names: the layout is
+  // agreed at build time, so paying for names here would be paying per emit for
+  // something both sides already know.
+  repeated Value fields = 3;
+}
+
+// Emitted answers one Emit. Host → runtime, correlated by the seq the runtime
+// chose.
+message Emitted {
+  // Empty means the event was dispatched. Anything else is a fault in the
+  // emitting plugin — an unknown type id, or a type it does not provide — and
+  // is reported rather than fatal: one plugin's bug must not take down the
+  // runtime its neighbours are living in.
+  string error = 1;
+  // A subscriber cancelled, or a fail-closed event lost one. The emitter is
+  // expected to abandon whatever it was about to do.
+  bool cancelled = 2;
+  // What the subscribers changed, as a diff against the fields that were sent.
+  // The runtime replays these into the emitter's own object, which is what
+  // makes a cross-process, cross-language dispatch feel in-process.
+  repeated Mutation mutations = 3;
 }
 
 // Invoked answers one Invoke. It carries no plugin id: like Verdict, it is
