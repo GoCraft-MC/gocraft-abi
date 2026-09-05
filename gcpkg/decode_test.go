@@ -48,6 +48,13 @@ func TestDecodeManifestAcceptsAMinimalManifest(t *testing.T) {
 }
 
 const purchaseEvent = `
+[[events.types]]
+name = "fr.oreo.Tier"
+fields = [
+  { name = "label", type = "string" },
+  { name = "price", type = "double", mutable = true },
+]
+
 [[events.provides]]
 type = "fr.oreo.shop/purchase"
 cancellable = true
@@ -118,7 +125,7 @@ func TestDecodeManifestRejectsProvidedEvents(t *testing.T) {
 	}, {
 		name:     "a field with no type",
 		manifest: "[[events.provides]]\ntype = \"fr.oreo/a\"\nfields = [{ name = \"x\", type = \"\" }]\n",
-		want:     "has no type",
+		want:     "want one of",
 	}, {
 		name:     "a field name that is not an identifier",
 		manifest: "[[events.provides]]\ntype = \"fr.oreo/a\"\nfields = [{ name = \"a price\", type = \"double\" }]\n",
