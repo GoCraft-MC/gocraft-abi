@@ -58,7 +58,8 @@ func TestOpenBundleRejectsInvalidPermissionLists(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			directory := t.TempDir()
-			manifest := validTestManifest + "[subscribe]\nperms = " + tc.permissions + "\n"
+			manifest := validTestManifest +
+				"[[subscribe]]\nevent = \"block.break\"\nperms = " + tc.permissions + "\n"
 			writeBundle(t, directory, "invalid.gcpkg", manifest, nil)
 			_, err := Open(filepath.Join(directory, "invalid.gcpkg"))
 			if err == nil || !strings.Contains(err.Error(), tc.want) {

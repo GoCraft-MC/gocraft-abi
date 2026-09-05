@@ -14,6 +14,8 @@
 // socket once a plugin runs; this says what has to be true before it can.
 package gcpkg
 
+import "fmt"
+
 import "github.com/GoCraft-MC/gocraft-abi/command"
 
 // Priority orders subscribers from earliest to latest.
@@ -32,6 +34,19 @@ const (
 type Subscription struct {
 	Event    string
 	Priority Priority
+
+	// Permissions are the nodes this subscription needs answered.
+	//
+	// Per subscription and not per plugin, because the host resolves every one
+	// of them before every dispatch and ships the answers inside the event —
+	// which is what lets can() be a map lookup rather than a round trip taken
+	// while the tick waits. A flat list per plugin meant every node a plugin
+	// declared anywhere travelled with every event it subscribed to: forty-one
+	// resolutions and forty-one serialised pairs on each block.break, for a
+	// handler that asked about one of them.
+	//
+	// The author knows which nodes an event needs. This is where they say so.
+	Permissions []string
 }
 
 // EventField is one positional field of a plugin-defined event.
@@ -152,4 +167,34 @@ type Bundle struct {
 	Path     string
 	Manifest Manifest
 	Commands *command.Root
+}
+
+// parsePriority reads the order a subscription runs in.
+//
+// Empty is normal, which is what most subscriptions want and what every one of
+// them used to get: the decoder hardcoded it and the manifest had no syntax to
+// say otherwise, so the bus sorted perfectly by a field nobody could set.
+//
+// The names are the order as this project means it, which is Bukkit's inverted:
+// high runs *before* low, because a plugin that decides an outcome should see
+// what the observers left rather than the other way round. Monitor runs last
+// and is for watching, not deciding.
+func parsePriority(name string) (Priority, error) {
+	switch name {
+	case "", "normal":
+		return PriorityNormal, nil
+	case "lowest":
+		return PriorityLowest, nil
+	case "low":
+		return PriorityLow, nil
+	case "high":
+		return PriorityHigh, nil
+	case "highest":
+		return PriorityHighest, nil
+	case "monitor":
+		return PriorityMonitor, nil
+	default:
+		return PriorityNormal, fmt.Errorf(
+			"unknown priority %q, want lowest, low, normal, high, highest or monitor", name)
+	}
 }

@@ -20,22 +20,32 @@ const (
 )
 
 type manifestFile struct {
-	ID         string `toml:"id"`
-	Version    string `toml:"version"`
-	APIVersion uint32 `toml:"api"`
-	Runtime    string `toml:"runtime"`
-	Entry      string `toml:"entry"`
-	Subscribe  struct {
-		Events      []string `toml:"events"`
-		Permissions []string `toml:"perms"`
-	} `toml:"subscribe"`
-	Commands struct {
+	ID         string             `toml:"id"`
+	Version    string             `toml:"version"`
+	APIVersion uint32             `toml:"api"`
+	Runtime    string             `toml:"runtime"`
+	Entry      string             `toml:"entry"`
+	Subscribe  []subscriptionFile `toml:"subscribe"`
+	Commands   struct {
 		Tree string `toml:"tree"`
 	} `toml:"commands"`
 	Events struct {
 		Types    []recordFile        `toml:"types"`
 		Provides []providedEventFile `toml:"provides"`
 	} `toml:"events"`
+}
+
+// subscriptionFile is one [[subscribe]] block.
+//
+// An array of tables rather than a list of names, because a subscription has
+// more to say than which event it is for: at what priority it runs, and which
+// permission nodes it needs answered. A flat list could express neither, which
+// is why priorities were unreachable and why every node a plugin declared
+// travelled with every event it subscribed to.
+type subscriptionFile struct {
+	Event       string   `toml:"event"`
+	Priority    string   `toml:"priority"`
+	Permissions []string `toml:"perms"`
 }
 
 type recordFile struct {
@@ -77,10 +87,28 @@ func DecodeManifest(reader io.Reader) (Manifest, error) {
 	manifest := Manifest{
 		ID: file.ID, Version: file.Version, APIVersion: file.APIVersion,
 		Runtime: file.Runtime, Entry: file.Entry, CommandTree: file.Commands.Tree,
-		Permissions: append([]string(nil), file.Subscribe.Permissions...),
 	}
-	for _, event := range file.Subscribe.Events {
-		manifest.Subscriptions = append(manifest.Subscriptions, Subscription{Event: event, Priority: PriorityNormal})
+	seenNode := map[string]struct{}{}
+	for _, declared := range file.Subscribe {
+		priority, err := parsePriority(declared.Priority)
+		if err != nil {
+			return Manifest{}, fmt.Errorf("plugin %s: subscription %s: %w",
+				file.ID, declared.Event, err)
+		}
+		manifest.Subscriptions = append(manifest.Subscriptions, Subscription{
+			Event: declared.Event, Priority: priority,
+			Permissions: append([]string(nil), declared.Permissions...),
+		})
+		// The union, for the command path: a command handler asking can() is
+		// not inside any subscription, so it sees every node the plugin
+		// declared anywhere.
+		for _, node := range declared.Permissions {
+			if _, done := seenNode[node]; done {
+				continue
+			}
+			seenNode[node] = struct{}{}
+			manifest.Permissions = append(manifest.Permissions, node)
+		}
 	}
 	for _, declared := range file.Events.Types {
 		record := EventRecord{Name: declared.Name, Fields: readFields(declared.Fields)}
@@ -145,16 +173,6 @@ func ValidateManifest(manifest Manifest) error {
 	if manifest.CommandTree != "" && !validBundleReference(manifest.CommandTree) {
 		return fmt.Errorf("plugin %s: invalid command tree path %q", manifest.ID, manifest.CommandTree)
 	}
-	permissions := make(map[string]struct{}, len(manifest.Permissions))
-	for _, permission := range manifest.Permissions {
-		if strings.TrimSpace(permission) == "" {
-			return fmt.Errorf("plugin %s: empty subscribed permission", manifest.ID)
-		}
-		if _, duplicate := permissions[permission]; duplicate {
-			return fmt.Errorf("plugin %s: duplicate subscribed permission %s", manifest.ID, permission)
-		}
-		permissions[permission] = struct{}{}
-	}
 	seen := make(map[string]struct{}, len(manifest.Subscriptions))
 	for _, subscription := range manifest.Subscriptions {
 		if strings.TrimSpace(subscription.Event) == "" {
@@ -164,6 +182,20 @@ func ValidateManifest(manifest Manifest) error {
 			return fmt.Errorf("plugin %s: duplicate subscription to %s", manifest.ID, subscription.Event)
 		}
 		seen[subscription.Event] = struct{}{}
+		// Per subscription, because that is where the nodes are declared now.
+		// Two subscriptions naming the same node is not a mistake — two events
+		// may both need it answered — but naming it twice in one is.
+		permissions := make(map[string]struct{}, len(subscription.Permissions))
+		for _, permission := range subscription.Permissions {
+			if strings.TrimSpace(permission) == "" {
+				return fmt.Errorf("plugin %s: empty subscribed permission", manifest.ID)
+			}
+			if _, duplicate := permissions[permission]; duplicate {
+				return fmt.Errorf("plugin %s: duplicate subscribed permission %s",
+					manifest.ID, permission)
+			}
+			permissions[permission] = struct{}{}
+		}
 	}
 	if err := validateRecords(manifest); err != nil {
 		return err
