@@ -897,9 +897,33 @@ func (x *Unload) GetPluginId() string {
 // who receives what and in which order, because subscription order and the
 // shared budget are host concerns.
 type Dispatch struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PluginId      string                 `protobuf:"bytes,1,opt,name=plugin_id,json=pluginId,proto3" json:"plugin_id,omitempty"`
-	Event         *Event                 `protobuf:"bytes,2,opt,name=event,proto3" json:"event,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	PluginId string                 `protobuf:"bytes,1,opt,name=plugin_id,json=pluginId,proto3" json:"plugin_id,omitempty"`
+	Event    *Event                 `protobuf:"bytes,2,opt,name=event,proto3" json:"event,omitempty"`
+	// warm asks the runtime to run everything a dispatch runs except the
+	// handlers, and answer as it normally would.
+	//
+	// It exists because the first event of a type into an out-of-process runtime
+	// costs tens of times a warm one — measured at 7.9 ms against a 2 ms budget
+	// for a JVM, from class loading, lazily built protobuf coders and
+	// interpreted bytecode on both sides of the socket. That cost lands on the
+	// tick, and on an event whose provider declared fail_closed it cancels an
+	// action nobody refused, once per restart, invisibly.
+	//
+	// The host sends these between LOAD and READY, which it already waits for
+	// without a budget. Down the real socket rather than replicated inside a
+	// runtime: a warm-up that reimplemented the dispatch path would warm the
+	// copy, and every piece it forgot — the writer thread, the framing, the
+	// host's own first marshal — would still be cold when it mattered.
+	//
+	// The payload is empty and the runtime supplies one of its own shape. It
+	// already has to know the layout to decode a real event, so sending a blank
+	// would be describing the shape twice.
+	//
+	// A runtime that has nothing to warm may treat this as a no-op and answer.
+	// What it must never do is run a handler: the values are placeholders, and an
+	// author's code would be deciding about a purchase nobody made.
+	Warm          bool `protobuf:"varint,3,opt,name=warm,proto3" json:"warm,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -946,6 +970,13 @@ func (x *Dispatch) GetEvent() *Event {
 		return x.Event
 	}
 	return nil
+}
+
+func (x *Dispatch) GetWarm() bool {
+	if x != nil {
+		return x.Warm
+	}
+	return false
 }
 
 type Ping struct {
@@ -1978,10 +2009,11 @@ const file_abi_v1_envelope_proto_rawDesc = "" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\"\a\n" +
 	"\x05Ready\"%\n" +
 	"\x06Unload\x12\x1b\n" +
-	"\tplugin_id\x18\x01 \x01(\tR\bpluginId\"T\n" +
+	"\tplugin_id\x18\x01 \x01(\tR\bpluginId\"h\n" +
 	"\bDispatch\x12\x1b\n" +
 	"\tplugin_id\x18\x01 \x01(\tR\bpluginId\x12+\n" +
-	"\x05event\x18\x02 \x01(\v2\x15.gocraft.abi.v1.EventR\x05event\"\x06\n" +
+	"\x05event\x18\x02 \x01(\v2\x15.gocraft.abi.v1.EventR\x05event\x12\x12\n" +
+	"\x04warm\x18\x03 \x01(\bR\x04warm\"\x06\n" +
 	"\x04Ping\"\x06\n" +
 	"\x04Pong\"\n" +
 	"\n" +
