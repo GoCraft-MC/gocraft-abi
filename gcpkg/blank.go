@@ -47,10 +47,16 @@ func blankField(declared string, records map[string]EventRecord, depth int) abi.
 		return abi.List()
 	}
 	element := blankElement(parsed, records, depth)
-	if parsed.List {
+	switch {
+	case parsed.List:
 		// One element rather than none, so the loop that reads the list runs a
 		// round instead of being skipped — which is the cost being paid here.
 		return abi.List(element)
+	case parsed.Map:
+		// A map travels as a list of key/value pairs, the shape the injected
+		// permission map and a block's properties already take. One pair, for
+		// the same reason a list gets one element.
+		return abi.List(abi.List(abi.String(""), element))
 	}
 	return element
 }

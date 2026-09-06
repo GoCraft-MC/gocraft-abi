@@ -40,6 +40,19 @@ const (
 // mutation path may reach before anybody has written one.
 const listPrefix = "[]"
 
+// mapPrefix marks a keyed field, and the key is always a string.
+//
+// One key type rather than a choice, because a map has to survive every
+// language on the far side: a Lua table indexes by string, a JSON dump keys by
+// string, and an int-keyed map would be a list with holes in three of the four
+// runtimes. An author who means "by number" declares a record with a number in
+// it and says what the number is.
+//
+// One level, exactly as a list is. §10 allows "List/Map of those", and nesting
+// either inside the other would mean deciding how deep a mutation path reaches
+// before anybody has written one.
+const mapPrefix = "map[string]"
+
 func scalar(name string) bool {
 	switch name {
 	case ScalarBool, ScalarInt, ScalarDouble, ScalarString, ScalarBytes, TypePlayerRef:
@@ -52,6 +65,9 @@ func scalar(name string) bool {
 type FieldType struct {
 	// List reports the [] prefix.
 	List bool
+	// Map reports the map[string] prefix. A field is a list or a map or
+	// neither, never both.
+	Map bool
 	// Element is what the field holds, or what its list holds: a scalar name or
 	// a record name.
 	Element string
@@ -69,12 +85,17 @@ func ParseFieldType(declared string) (FieldType, bool) {
 		return FieldType{}, false
 	}
 	parsed := FieldType{}
-	if strings.HasPrefix(element, listPrefix) {
+	switch {
+	case strings.HasPrefix(element, listPrefix):
 		parsed.List = true
 		element = element[len(listPrefix):]
+	case strings.HasPrefix(element, mapPrefix):
+		parsed.Map = true
+		element = element[len(mapPrefix):]
 	}
-	// After one prefix, another means a list of lists.
-	if element == "" || strings.HasPrefix(element, listPrefix) {
+	// After one prefix, another means a list of lists or a map of maps.
+	if element == "" || strings.HasPrefix(element, listPrefix) ||
+		strings.HasPrefix(element, mapPrefix) {
 		return FieldType{}, false
 	}
 	parsed.Element = element
@@ -163,7 +184,8 @@ func validateFields(pluginID, owner string, fields []EventField) error {
 		if _, ok := ParseFieldType(field.Type); !ok {
 			return fmt.Errorf("plugin %s: %s: field %s has type %q, want one of "+
 				"bool, int, double, string, bytes, PlayerRef, a declared record, "+
-				"or [] before any of them", pluginID, owner, field.Name, field.Type)
+				"or [] or map[string] before any of them",
+				pluginID, owner, field.Name, field.Type)
 		}
 	}
 	return nil

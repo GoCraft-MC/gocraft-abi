@@ -134,3 +134,33 @@ fields = [{ name = "tier", type = "fr.oreo.Tier" }]
 		t.Fatalf("DecodeManifest() provides = %+v, want two events", manifest.Provides)
 	}
 }
+
+// §10 allows "List/Map of those", and a map is the one shape the wire has no
+// kind for: it travels as a list of key/value pairs, exactly as the injected
+// permission map and a block's properties already do.
+func TestParseFieldTypeReadsAMap(t *testing.T) {
+	parsed, ok := ParseFieldType("map[string]double")
+	if !ok || !parsed.Map || parsed.List || parsed.Element != "double" {
+		t.Fatalf("ParseFieldType() = %#v, %v", parsed, ok)
+	}
+	record, ok := ParseFieldType("map[string]fr.oreo.Tier")
+	if !ok || !record.Map || !record.Record {
+		t.Fatalf("ParseFieldType() = %#v, %v", record, ok)
+	}
+}
+
+// One level, exactly as a list is. Nesting either inside the other would mean
+// deciding how deep a mutation path may reach before anybody has written one.
+func TestParseFieldTypeRefusesNestedContainers(t *testing.T) {
+	for _, declared := range []string{
+		"map[string]map[string]int",
+		"map[string][]int",
+		"[]map[string]int",
+		"[][]int",
+		"map[string]",
+	} {
+		if parsed, ok := ParseFieldType(declared); ok {
+			t.Fatalf("ParseFieldType(%q) = %#v, want a refusal", declared, parsed)
+		}
+	}
+}
