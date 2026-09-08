@@ -781,6 +781,96 @@ func (x *PlayerRespawn) GetZ() float64 {
 	if x != nil {
 		return x.Z
 	}
+	return 0
+}
+
+func (x *PlayerRespawn) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+type PlayerTeleport struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	FromX         float64                `protobuf:"fixed64,2,opt,name=from_x,json=fromX,proto3" json:"from_x,omitempty"`
+	FromY         float64                `protobuf:"fixed64,3,opt,name=from_y,json=fromY,proto3" json:"from_y,omitempty"`
+	FromZ         float64                `protobuf:"fixed64,4,opt,name=from_z,json=fromZ,proto3" json:"from_z,omitempty"`
+	X             float64                `protobuf:"fixed64,5,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float64                `protobuf:"fixed64,6,opt,name=y,proto3" json:"y,omitempty"`
+	Z             float64                `protobuf:"fixed64,7,opt,name=z,proto3" json:"z,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,8,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,9,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerTeleport) Reset() {
+	*x = PlayerTeleport{}
+	mi := &file_abi_v1_events_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerTeleport) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerTeleport) ProtoMessage() {}
+
+func (x *PlayerTeleport) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerTeleport.ProtoReflect.Descriptor instead.
+func (*PlayerTeleport) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *PlayerTeleport) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerTeleport) GetFromX() float64 {
+	if x != nil {
+		return x.FromX
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetFromY() float64 {
+	if x != nil {
+		return x.FromY
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetFromZ() float64 {
+	if x != nil {
+		return x.FromZ
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetX() float64 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
