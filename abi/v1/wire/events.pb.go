@@ -961,6 +961,96 @@ func (x *PlayerInteract) GetTarget() string {
 func (x *PlayerInteract) GetPos() *BlockPos {
 	if x != nil {
 		return x.Pos
+	}
+	return nil
+}
+
+func (x *PlayerInteract) GetEntityId() int64 {
+	if x != nil {
+		return x.EntityId
+	}
+	return 0
+}
+
+func (x *PlayerInteract) GetItem() string {
+	if x != nil {
+		return x.Item
+	}
+	return ""
+}
+
+func (x *PlayerInteract) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+func (x *PlayerInteract) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// Java container clicks and Bedrock normal inventory transactions. Slot -1
+// means an edition's transaction spans several slots rather than one click.
+type InventoryClick struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Container     string                 `protobuf:"bytes,2,opt,name=container,proto3" json:"container,omitempty"`
+	Slot          int64                  `protobuf:"zigzag64,3,opt,name=slot,proto3" json:"slot,omitempty"`
+	Button        int64                  `protobuf:"zigzag64,4,opt,name=button,proto3" json:"button,omitempty"`
+	Mode          int64                  `protobuf:"zigzag64,5,opt,name=mode,proto3" json:"mode,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,6,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InventoryClick) Reset() {
+	*x = InventoryClick{}
+	mi := &file_abi_v1_events_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InventoryClick) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InventoryClick) ProtoMessage() {}
+
+func (x *InventoryClick) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InventoryClick.ProtoReflect.Descriptor instead.
+func (*InventoryClick) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *InventoryClick) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *InventoryClick) GetContainer() string {
+	if x != nil {
+		return x.Container
+	}
+	return ""
+}
+
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
