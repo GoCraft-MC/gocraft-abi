@@ -871,6 +871,96 @@ func (x *PlayerTeleport) GetX() float64 {
 	return 0
 }
 
+func (x *PlayerTeleport) GetY() float64 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetZ() float64 {
+	if x != nil {
+		return x.Z
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// An attempted main-hand block/entity interaction. Cancelling prevents the
+// associated use/boarding/trade action; it does not describe an attack.
+type PlayerInteract struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Target        string                 `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
+	Pos           *BlockPos              `protobuf:"bytes,3,opt,name=pos,proto3" json:"pos,omitempty"`
+	EntityId      int64                  `protobuf:"zigzag64,4,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	Item          string                 `protobuf:"bytes,5,opt,name=item,proto3" json:"item,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,6,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,7,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerInteract) Reset() {
+	*x = PlayerInteract{}
+	mi := &file_abi_v1_events_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerInteract) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerInteract) ProtoMessage() {}
+
+func (x *PlayerInteract) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerInteract.ProtoReflect.Descriptor instead.
+func (*PlayerInteract) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *PlayerInteract) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerInteract) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
+func (x *PlayerInteract) GetPos() *BlockPos {
+	if x != nil {
+		return x.Pos
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
