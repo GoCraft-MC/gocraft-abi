@@ -194,6 +194,14 @@ var file_abi_v1_options_proto_extTypes = []protoimpl.ExtensionInfo{
 		Tag:           "varint,50002,opt,name=injected",
 		Filename:      "abi/v1/options.proto",
 	},
+	{
+		ExtendedType:  (*descriptorpb.FieldOptions)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         50003,
+		Name:          "gocraft.abi.v1.mutable",
+		Tag:           "varint,50003,opt,name=mutable",
+		Filename:      "abi/v1/options.proto",
+	},
 }
 
 // Extension fields to descriptorpb.MessageOptions.
