@@ -1051,6 +1051,96 @@ func (x *InventoryClick) GetContainer() string {
 	return ""
 }
 
+func (x *InventoryClick) GetSlot() int64 {
+	if x != nil {
+		return x.Slot
+	}
+	return 0
+}
+
+func (x *InventoryClick) GetButton() int64 {
+	if x != nil {
+		return x.Button
+	}
+	return 0
+}
+
+func (x *InventoryClick) GetMode() int64 {
+	if x != nil {
+		return x.Mode
+	}
+	return 0
+}
+
+func (x *InventoryClick) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// A use-in-air item action, not use-on-block or inventory movement.
+type ItemUse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Item          string                 `protobuf:"bytes,2,opt,name=item,proto3" json:"item,omitempty"`
+	Hand          int64                  `protobuf:"zigzag64,3,opt,name=hand,proto3" json:"hand,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,4,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ItemUse) Reset() {
+	*x = ItemUse{}
+	mi := &file_abi_v1_events_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ItemUse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ItemUse) ProtoMessage() {}
+
+func (x *ItemUse) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ItemUse.ProtoReflect.Descriptor instead.
+func (*ItemUse) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ItemUse) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *ItemUse) GetItem() string {
+	if x != nil {
+		return x.Item
+	}
+	return ""
+}
+
+func (x *ItemUse) GetHand() int64 {
+	if x != nil {
+		return x.Hand
+	}
+	return 0
+}
+
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
