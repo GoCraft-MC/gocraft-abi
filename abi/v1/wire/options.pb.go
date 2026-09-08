@@ -239,7 +239,8 @@ const file_abi_v1_options_proto_rawDesc = "" +
 	"\x13PHASE_TICK_BLOCKING\x10\x01\x12\x17\n" +
 	"\x13PHASE_OBSERVATIONAL\x10\x02:U\n" +
 	"\x05event\x12\x1f.google.protobuf.MessageOptions\x18ц\x03 \x01(\v2\x1c.gocraft.abi.v1.EventOptionsR\x05event:;\n" +
-	"\binjected\x12\x1d.google.protobuf.FieldOptions\x18҆\x03 \x01(\bR\binjectedBW\n" +
+	"\binjected\x12\x1d.google.protobuf.FieldOptions\x18҆\x03 \x01(\bR\binjected:9\n" +
+	"\amutable\x12\x1d.google.protobuf.FieldOptions\x18ӆ\x03 \x01(\bR\amutableBW\n" +
 	"\x11fr.gocraft.abi.v1B\fOptionsProtoP\x01Z2github.com/GoCraft-MC/gocraft-abi/abi/v1/wire;wireb\x06proto3"
 
 var (
