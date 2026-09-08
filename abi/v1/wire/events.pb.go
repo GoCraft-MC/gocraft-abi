@@ -1141,6 +1141,90 @@ func (x *ItemUse) GetHand() int64 {
 	return 0
 }
 
+func (x *ItemUse) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// Non-player entity damage. Players use player.damage, never both events.
+type EntityDamage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EntityId      int64                  `protobuf:"zigzag64,1,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	EntityType    string                 `protobuf:"bytes,2,opt,name=entity_type,json=entityType,proto3" json:"entity_type,omitempty"`
+	Damage        float64                `protobuf:"fixed64,3,opt,name=damage,proto3" json:"damage,omitempty"`
+	Cause         string                 `protobuf:"bytes,4,opt,name=cause,proto3" json:"cause,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,5,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EntityDamage) Reset() {
+	*x = EntityDamage{}
+	mi := &file_abi_v1_events_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EntityDamage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EntityDamage) ProtoMessage() {}
+
+func (x *EntityDamage) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EntityDamage.ProtoReflect.Descriptor instead.
+func (*EntityDamage) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *EntityDamage) GetEntityId() int64 {
+	if x != nil {
+		return x.EntityId
+	}
+	return 0
+}
+
+func (x *EntityDamage) GetEntityType() string {
+	if x != nil {
+		return x.EntityType
+	}
+	return ""
+}
+
+func (x *EntityDamage) GetDamage() float64 {
+	if x != nil {
+		return x.Damage
+	}
+	return 0
+}
+
+func (x *EntityDamage) GetCause() string {
+	if x != nil {
+		return x.Cause
+	}
+	return ""
+}
+
+func (x *EntityDamage) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
