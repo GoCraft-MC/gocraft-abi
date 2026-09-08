@@ -1429,18 +1429,41 @@ var file_abi_v1_events_proto_goTypes = []any{
 	nil,                    // 27: gocraft.abi.v1.ItemUse.PermsEntry
 }
 var file_abi_v1_events_proto_depIdxs = []int32{
-	5, // 0: gocraft.abi.v1.Block.properties:type_name -> gocraft.abi.v1.Block.PropertiesEntry
-	0, // 1: gocraft.abi.v1.BlockBreak.player:type_name -> gocraft.abi.v1.PlayerRef
-	1, // 2: gocraft.abi.v1.BlockBreak.pos:type_name -> gocraft.abi.v1.BlockPos
-	2, // 3: gocraft.abi.v1.BlockBreak.block:type_name -> gocraft.abi.v1.Block
-	6, // 4: gocraft.abi.v1.BlockBreak.perms:type_name -> gocraft.abi.v1.BlockBreak.PermsEntry
-	0, // 5: gocraft.abi.v1.PlayerJoin.player:type_name -> gocraft.abi.v1.PlayerRef
-	7, // 6: gocraft.abi.v1.PlayerJoin.perms:type_name -> gocraft.abi.v1.PlayerJoin.PermsEntry
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	17, // 0: gocraft.abi.v1.Block.properties:type_name -> gocraft.abi.v1.Block.PropertiesEntry
+	0,  // 1: gocraft.abi.v1.BlockBreak.player:type_name -> gocraft.abi.v1.PlayerRef
+	1,  // 2: gocraft.abi.v1.BlockBreak.pos:type_name -> gocraft.abi.v1.BlockPos
+	2,  // 3: gocraft.abi.v1.BlockBreak.block:type_name -> gocraft.abi.v1.Block
+	18, // 4: gocraft.abi.v1.BlockBreak.perms:type_name -> gocraft.abi.v1.BlockBreak.PermsEntry
+	0,  // 5: gocraft.abi.v1.PlayerJoin.player:type_name -> gocraft.abi.v1.PlayerRef
+	19, // 6: gocraft.abi.v1.PlayerJoin.perms:type_name -> gocraft.abi.v1.PlayerJoin.PermsEntry
+	0,  // 7: gocraft.abi.v1.BlockPlace.player:type_name -> gocraft.abi.v1.PlayerRef
+	1,  // 8: gocraft.abi.v1.BlockPlace.pos:type_name -> gocraft.abi.v1.BlockPos
+	2,  // 9: gocraft.abi.v1.BlockPlace.block:type_name -> gocraft.abi.v1.Block
+	2,  // 10: gocraft.abi.v1.BlockPlace.replaced:type_name -> gocraft.abi.v1.Block
+	20, // 11: gocraft.abi.v1.BlockPlace.perms:type_name -> gocraft.abi.v1.BlockPlace.PermsEntry
+	0,  // 12: gocraft.abi.v1.PlayerQuit.player:type_name -> gocraft.abi.v1.PlayerRef
+	0,  // 13: gocraft.abi.v1.PlayerChat.player:type_name -> gocraft.abi.v1.PlayerRef
+	21, // 14: gocraft.abi.v1.PlayerChat.perms:type_name -> gocraft.abi.v1.PlayerChat.PermsEntry
+	0,  // 15: gocraft.abi.v1.PlayerCommand.player:type_name -> gocraft.abi.v1.PlayerRef
+	22, // 16: gocraft.abi.v1.PlayerCommand.perms:type_name -> gocraft.abi.v1.PlayerCommand.PermsEntry
+	0,  // 17: gocraft.abi.v1.PlayerDamage.player:type_name -> gocraft.abi.v1.PlayerRef
+	23, // 18: gocraft.abi.v1.PlayerDamage.perms:type_name -> gocraft.abi.v1.PlayerDamage.PermsEntry
+	0,  // 19: gocraft.abi.v1.PlayerDeath.player:type_name -> gocraft.abi.v1.PlayerRef
+	0,  // 20: gocraft.abi.v1.PlayerRespawn.player:type_name -> gocraft.abi.v1.PlayerRef
+	0,  // 21: gocraft.abi.v1.PlayerTeleport.player:type_name -> gocraft.abi.v1.PlayerRef
+	24, // 22: gocraft.abi.v1.PlayerTeleport.perms:type_name -> gocraft.abi.v1.PlayerTeleport.PermsEntry
+	0,  // 23: gocraft.abi.v1.PlayerInteract.player:type_name -> gocraft.abi.v1.PlayerRef
+	1,  // 24: gocraft.abi.v1.PlayerInteract.pos:type_name -> gocraft.abi.v1.BlockPos
+	25, // 25: gocraft.abi.v1.PlayerInteract.perms:type_name -> gocraft.abi.v1.PlayerInteract.PermsEntry
+	0,  // 26: gocraft.abi.v1.InventoryClick.player:type_name -> gocraft.abi.v1.PlayerRef
+	26, // 27: gocraft.abi.v1.InventoryClick.perms:type_name -> gocraft.abi.v1.InventoryClick.PermsEntry
+	0,  // 28: gocraft.abi.v1.ItemUse.player:type_name -> gocraft.abi.v1.PlayerRef
+	27, // 29: gocraft.abi.v1.ItemUse.perms:type_name -> gocraft.abi.v1.ItemUse.PermsEntry
+	30, // [30:30] is the sub-list for method output_type
+	30, // [30:30] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_abi_v1_events_proto_init() }
