@@ -1478,7 +1478,7 @@ func file_abi_v1_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_abi_v1_events_proto_rawDesc), len(file_abi_v1_events_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
