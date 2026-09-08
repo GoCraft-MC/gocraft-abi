@@ -157,3 +157,122 @@ func TestEmptyVerdictSurvivesARoundTrip(t *testing.T) {
 		t.Fatalf("round trip = %+v, want an empty verdict", decoded)
 	}
 }
+
+func TestEmissionSurvivesARoundTrip(t *testing.T) {
+	emission := abi.Emission{
+		PluginID: "fr.oreo.shop", TypeID: 3,
+		Fields: []abi.Value{
+			abi.String("oreo"),
+			abi.List(abi.Double(19.99), abi.Double(4.50)),
+			abi.Double(1500),
+		},
+	}
+	encoded, err := EncodeEmission(emission)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := DecodeEmission(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(decoded, emission) {
+		t.Fatalf("round trip = %+v, want %+v", decoded, emission)
+	}
+}
+
+func TestEmissionRefusesTheNativeTypeID(t *testing.T) {
+	// Zero is what abi/v1 puts in Event.type_id for a native event. A plugin
+	// emitting it would be indistinguishable from the host on the wire, so it
+	// is refused on both sides of the socket rather than trusted on one.
+	if _, err := EncodeEmission(abi.Emission{PluginID: "fr.oreo.shop"}); err == nil {
+		t.Fatal("EncodeEmission() accepted type id 0")
+	}
+	if _, err := DecodeEmission(&wire.Emit{PluginId: "fr.oreo.shop"}); err == nil {
+		t.Fatal("DecodeEmission() accepted type id 0")
+	}
+}
+
+func TestEmissionRefusesAnAnonymousEmitter(t *testing.T) {
+	// The host skips the emitter's own subscribers, so it has to know who that
+	// is; an empty id would send a plugin its own event back.
+	if _, err := EncodeEmission(abi.Emission{TypeID: 1}); err == nil {
+		t.Fatal("EncodeEmission() accepted an emission with no plugin id")
+	}
+	if _, err := DecodeEmission(&wire.Emit{TypeId: 1}); err == nil {
+		t.Fatal("DecodeEmission() accepted an emission with no plugin id")
+	}
+}
+
+func TestEmissionResultSurvivesARoundTrip(t *testing.T) {
+	result := abi.EmissionResult{
+		Cancelled: true,
+		Mutations: []abi.Mutation{
+			{Path: []uint32{2}, Value: abi.Double(1200)},
+			{Path: []uint32{1, 0, 2}, Value: abi.Double(15.99)},
+		},
+	}
+	encoded, err := EncodeEmissionResult(result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := DecodeEmissionResult(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(decoded, result) {
+		t.Fatalf("round trip = %+v, want %+v", decoded, result)
+	}
+}
+
+func TestFailedEmissionResultCarriesItsReason(t *testing.T) {
+	encoded, err := EncodeEmissionResult(abi.EmissionResult{Error: "unknown event type id 9"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := DecodeEmissionResult(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if decoded.Error != "unknown event type id 9" || decoded.Cancelled {
+		t.Fatalf("round trip = %+v, want the reason kept and nothing cancelled", decoded)
+	}
+}
+
+func TestEventBindingsSurviveARoundTrip(t *testing.T) {
+	bindings := []abi.EventBinding{
+		{TypeID: 1, Type: "fr.oreo.shop/purchase"},
+		{TypeID: 4, Type: "fr.oreo.shop/refund"},
+	}
+	encoded, err := EncodeEventBindings(bindings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := DecodeEventBindings(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(decoded, bindings) {
+		t.Fatalf("round trip = %+v, want %+v", decoded, bindings)
+	}
+}
+
+func TestEventBindingsRefuseAnUnusableEntry(t *testing.T) {
+	cases := []struct {
+		name    string
+		binding abi.EventBinding
+	}{
+		{name: "the native type id", binding: abi.EventBinding{TypeID: 0, Type: "fr.oreo.shop/purchase"}},
+		{name: "a nameless binding", binding: abi.EventBinding{TypeID: 1}},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			if _, err := EncodeEventBindings([]abi.EventBinding{test.binding}); err == nil {
+				t.Fatalf("EncodeEventBindings() accepted %s", test.name)
+			}
+			wired := []*wire.EventBinding{{TypeId: test.binding.TypeID, Type: test.binding.Type}}
+			if _, err := DecodeEventBindings(wired); err == nil {
+				t.Fatalf("DecodeEventBindings() accepted %s", test.name)
+			}
+		})
+	}
+}

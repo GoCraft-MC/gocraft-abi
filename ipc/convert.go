@@ -215,14 +215,36 @@ func decodeHostCall(call *wire.HostCall) (abi.HostCall, error) {
 }
 
 // EncodeVerdict converts a plugin verdict for transmission to the host.
-func EncodeVerdict(verdict abi.Verdict) (*wire.Verdict, error) {
-	mutations := make([]*wire.Mutation, 0, len(verdict.Mutations))
-	for _, mutation := range verdict.Mutations {
+// encodeMutations converts a positional diff, whichever message carries it: a
+// subscriber's verdict on the way in, an emitter's replay on the way back out.
+func encodeMutations(mutations []abi.Mutation) ([]*wire.Mutation, error) {
+	encoded := make([]*wire.Mutation, 0, len(mutations))
+	for _, mutation := range mutations {
 		value, err := encodeValue(mutation.Value)
 		if err != nil {
 			return nil, err
 		}
-		mutations = append(mutations, &wire.Mutation{Path: mutation.Path, Value: value})
+		encoded = append(encoded, &wire.Mutation{Path: mutation.Path, Value: value})
+	}
+	return encoded, nil
+}
+
+func decodeMutations(mutations []*wire.Mutation) ([]abi.Mutation, error) {
+	var decoded []abi.Mutation
+	for _, mutation := range mutations {
+		value, err := decodeValue(mutation.GetValue())
+		if err != nil {
+			return nil, err
+		}
+		decoded = append(decoded, abi.Mutation{Path: mutation.GetPath(), Value: value})
+	}
+	return decoded, nil
+}
+
+func EncodeVerdict(verdict abi.Verdict) (*wire.Verdict, error) {
+	mutations, err := encodeMutations(verdict.Mutations)
+	if err != nil {
+		return nil, err
 	}
 	effects := make([]*wire.HostCall, 0, len(verdict.Effects))
 	for _, effect := range verdict.Effects {
@@ -240,13 +262,9 @@ func DecodeVerdict(verdict *wire.Verdict) (abi.Verdict, error) {
 	if verdict == nil {
 		return abi.Verdict{}, fmt.Errorf("ipc: missing verdict")
 	}
-	var mutations []abi.Mutation
-	for _, mutation := range verdict.GetMutations() {
-		value, err := decodeValue(mutation.GetValue())
-		if err != nil {
-			return abi.Verdict{}, err
-		}
-		mutations = append(mutations, abi.Mutation{Path: mutation.GetPath(), Value: value})
+	mutations, err := decodeMutations(verdict.GetMutations())
+	if err != nil {
+		return abi.Verdict{}, err
 	}
 	var effects []abi.HostCall
 	for _, effect := range verdict.GetEffects() {
@@ -257,6 +275,99 @@ func DecodeVerdict(verdict *wire.Verdict) (abi.Verdict, error) {
 		effects = append(effects, call)
 	}
 	return abi.Verdict{Cancelled: verdict.GetCancelled(), Mutations: mutations, Effects: effects}, nil
+}
+
+// EncodeEventBindings converts the id table the host assigned for one plugin.
+func EncodeEventBindings(bindings []abi.EventBinding) ([]*wire.EventBinding, error) {
+	encoded := make([]*wire.EventBinding, 0, len(bindings))
+	for _, binding := range bindings {
+		if binding.TypeID == 0 {
+			return nil, fmt.Errorf("ipc: event %q bound to type id 0, which native events use", binding.Type)
+		}
+		if binding.Type == "" {
+			return nil, fmt.Errorf("ipc: event type id %d bound to an empty name", binding.TypeID)
+		}
+		encoded = append(encoded, &wire.EventBinding{TypeId: binding.TypeID, Type: binding.Type})
+	}
+	return encoded, nil
+}
+
+// DecodeEventBindings converts the id table a runtime was loaded with.
+//
+// The same two refusals as the encoder, because this runs on the guest side
+// where the table is untrusted input: a zero id would make a plugin-defined
+// event indistinguishable from a native one, and an empty name would bind a
+// handler to nothing.
+func DecodeEventBindings(bindings []*wire.EventBinding) ([]abi.EventBinding, error) {
+	var decoded []abi.EventBinding
+	for _, binding := range bindings {
+		if binding.GetTypeId() == 0 {
+			return nil, fmt.Errorf("ipc: event %q bound to type id 0, which native events use", binding.GetType())
+		}
+		if binding.GetType() == "" {
+			return nil, fmt.Errorf("ipc: event type id %d bound to an empty name", binding.GetTypeId())
+		}
+		decoded = append(decoded, abi.EventBinding{TypeID: binding.GetTypeId(), Type: binding.GetType()})
+	}
+	return decoded, nil
+}
+
+// EncodeEmission converts one plugin's publication of a plugin-defined event.
+func EncodeEmission(emission abi.Emission) (*wire.Emit, error) {
+	if emission.PluginID == "" {
+		return nil, fmt.Errorf("ipc: emission has no plugin id")
+	}
+	if emission.TypeID == 0 {
+		return nil, fmt.Errorf("ipc: plugin %s emitted type id 0, which native events use", emission.PluginID)
+	}
+	fields, err := encodeValues(emission.Fields)
+	if err != nil {
+		return nil, err
+	}
+	return &wire.Emit{PluginId: emission.PluginID, TypeId: emission.TypeID, Fields: fields}, nil
+}
+
+// DecodeEmission converts an untrusted emission into the shared ABI form.
+func DecodeEmission(emit *wire.Emit) (abi.Emission, error) {
+	if emit == nil {
+		return abi.Emission{}, fmt.Errorf("ipc: missing emission")
+	}
+	if emit.GetPluginId() == "" {
+		return abi.Emission{}, fmt.Errorf("ipc: emission has no plugin id")
+	}
+	if emit.GetTypeId() == 0 {
+		return abi.Emission{}, fmt.Errorf("ipc: plugin %s emitted type id 0, which native events use", emit.GetPluginId())
+	}
+	fields, err := decodeValues(emit.GetFields())
+	if err != nil {
+		return abi.Emission{}, err
+	}
+	return abi.Emission{PluginID: emit.GetPluginId(), TypeID: emit.GetTypeId(), Fields: fields}, nil
+}
+
+// EncodeEmissionResult converts what the subscribers did back into wire form.
+func EncodeEmissionResult(result abi.EmissionResult) (*wire.Emitted, error) {
+	mutations, err := encodeMutations(result.Mutations)
+	if err != nil {
+		return nil, err
+	}
+	return &wire.Emitted{
+		Error: result.Error, Cancelled: result.Cancelled, Mutations: mutations,
+	}, nil
+}
+
+// DecodeEmissionResult converts the host's answer for the emitting runtime.
+func DecodeEmissionResult(emitted *wire.Emitted) (abi.EmissionResult, error) {
+	if emitted == nil {
+		return abi.EmissionResult{}, fmt.Errorf("ipc: missing emission result")
+	}
+	mutations, err := decodeMutations(emitted.GetMutations())
+	if err != nil {
+		return abi.EmissionResult{}, err
+	}
+	return abi.EmissionResult{
+		Error: emitted.GetError(), Cancelled: emitted.GetCancelled(), Mutations: mutations,
+	}, nil
 }
 
 func encodeCommandArgumentType(kind abi.CommandArgumentType) (wire.CommandArgumentType, error) {
