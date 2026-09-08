@@ -214,6 +214,11 @@ var (
 var (
 	// optional bool injected = 50002;
 	E_Injected = &file_abi_v1_options_proto_extTypes[1]
+	// Only explicitly mutable native fields may be returned in a verdict.
+	// This annotates the existing positional Mutation transport; it adds no frame.
+	//
+	// optional bool mutable = 50003;
+	E_Mutable = &file_abi_v1_options_proto_extTypes[2]
 )
 
 var File_abi_v1_options_proto protoreflect.FileDescriptor
