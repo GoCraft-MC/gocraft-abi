@@ -1399,14 +1399,34 @@ func file_abi_v1_events_proto_rawDescGZIP() []byte {
 
 var file_abi_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_abi_v1_events_proto_goTypes = []any{
-	(*PlayerRef)(nil),  // 0: gocraft.abi.v1.PlayerRef
-	(*BlockPos)(nil),   // 1: gocraft.abi.v1.BlockPos
-	(*Block)(nil),      // 2: gocraft.abi.v1.Block
-	(*BlockBreak)(nil), // 3: gocraft.abi.v1.BlockBreak
-	(*PlayerJoin)(nil), // 4: gocraft.abi.v1.PlayerJoin
-	nil,                // 5: gocraft.abi.v1.Block.PropertiesEntry
-	nil,                // 6: gocraft.abi.v1.BlockBreak.PermsEntry
-	nil,                // 7: gocraft.abi.v1.PlayerJoin.PermsEntry
+	(*PlayerRef)(nil),      // 0: gocraft.abi.v1.PlayerRef
+	(*BlockPos)(nil),       // 1: gocraft.abi.v1.BlockPos
+	(*Block)(nil),          // 2: gocraft.abi.v1.Block
+	(*BlockBreak)(nil),     // 3: gocraft.abi.v1.BlockBreak
+	(*PlayerJoin)(nil),     // 4: gocraft.abi.v1.PlayerJoin
+	(*BlockPlace)(nil),     // 5: gocraft.abi.v1.BlockPlace
+	(*PlayerQuit)(nil),     // 6: gocraft.abi.v1.PlayerQuit
+	(*PlayerChat)(nil),     // 7: gocraft.abi.v1.PlayerChat
+	(*PlayerCommand)(nil),  // 8: gocraft.abi.v1.PlayerCommand
+	(*PlayerDamage)(nil),   // 9: gocraft.abi.v1.PlayerDamage
+	(*PlayerDeath)(nil),    // 10: gocraft.abi.v1.PlayerDeath
+	(*PlayerRespawn)(nil),  // 11: gocraft.abi.v1.PlayerRespawn
+	(*PlayerTeleport)(nil), // 12: gocraft.abi.v1.PlayerTeleport
+	(*PlayerInteract)(nil), // 13: gocraft.abi.v1.PlayerInteract
+	(*InventoryClick)(nil), // 14: gocraft.abi.v1.InventoryClick
+	(*ItemUse)(nil),        // 15: gocraft.abi.v1.ItemUse
+	(*EntityDamage)(nil),   // 16: gocraft.abi.v1.EntityDamage
+	nil,                    // 17: gocraft.abi.v1.Block.PropertiesEntry
+	nil,                    // 18: gocraft.abi.v1.BlockBreak.PermsEntry
+	nil,                    // 19: gocraft.abi.v1.PlayerJoin.PermsEntry
+	nil,                    // 20: gocraft.abi.v1.BlockPlace.PermsEntry
+	nil,                    // 21: gocraft.abi.v1.PlayerChat.PermsEntry
+	nil,                    // 22: gocraft.abi.v1.PlayerCommand.PermsEntry
+	nil,                    // 23: gocraft.abi.v1.PlayerDamage.PermsEntry
+	nil,                    // 24: gocraft.abi.v1.PlayerTeleport.PermsEntry
+	nil,                    // 25: gocraft.abi.v1.PlayerInteract.PermsEntry
+	nil,                    // 26: gocraft.abi.v1.InventoryClick.PermsEntry
+	nil,                    // 27: gocraft.abi.v1.ItemUse.PermsEntry
 }
 var file_abi_v1_events_proto_depIdxs = []int32{
 	5, // 0: gocraft.abi.v1.Block.properties:type_name -> gocraft.abi.v1.Block.PropertiesEntry
