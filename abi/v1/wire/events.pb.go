@@ -511,6 +511,96 @@ func (*PlayerChat) Descriptor() ([]byte, []int) {
 }
 
 func (x *PlayerChat) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerChat) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *PlayerChat) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// Permissions and argument parsing run AFTER plugins rewrite the command.
+type PlayerCommand struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Command       string                 `protobuf:"bytes,2,opt,name=command,proto3" json:"command,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,3,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerCommand) Reset() {
+	*x = PlayerCommand{}
+	mi := &file_abi_v1_events_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerCommand) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerCommand) ProtoMessage() {}
+
+func (x *PlayerCommand) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerCommand.ProtoReflect.Descriptor instead.
+func (*PlayerCommand) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PlayerCommand) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerCommand) GetCommand() string {
+	if x != nil {
+		return x.Command
+	}
+	return ""
+}
+
+func (x *PlayerCommand) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// Damage entering the player's health pipeline, before resistance and
+// absorption. Armour already applied by the caller is not applied again.
+type PlayerDamage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Damage        float64                `protobuf:"fixed64,2,opt,name=damage,proto3" json:"damage,omitempty"`
+	Cause         string                 `protobuf:"bytes,3,opt,name=cause,proto3" json:"cause,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,4,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
