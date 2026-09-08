@@ -291,7 +291,7 @@ func file_abi_v1_options_proto_init() {
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_abi_v1_options_proto_rawDesc), len(file_abi_v1_options_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   1,
-			NumExtensions: 2,
+			NumExtensions: 3,
 			NumServices:   0,
 		},
 		GoTypes:           file_abi_v1_options_proto_goTypes,
