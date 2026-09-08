@@ -331,6 +331,96 @@ func (x *PlayerJoin) GetPerms() map[string]bool {
 	return nil
 }
 
+// Fired only after a valid placement has been computed, before any block or
+// item changes. Multi-block structures produce one event for the primary block.
+type BlockPlace struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Pos           *BlockPos              `protobuf:"bytes,2,opt,name=pos,proto3" json:"pos,omitempty"`
+	Block         *Block                 `protobuf:"bytes,3,opt,name=block,proto3" json:"block,omitempty"`
+	Replaced      *Block                 `protobuf:"bytes,4,opt,name=replaced,proto3" json:"replaced,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,5,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,6,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BlockPlace) Reset() {
+	*x = BlockPlace{}
+	mi := &file_abi_v1_events_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BlockPlace) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockPlace) ProtoMessage() {}
+
+func (x *BlockPlace) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockPlace.ProtoReflect.Descriptor instead.
+func (*BlockPlace) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *BlockPlace) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *BlockPlace) GetPos() *BlockPos {
+	if x != nil {
+		return x.Pos
+	}
+	return nil
+}
+
+func (x *BlockPlace) GetBlock() *Block {
+	if x != nil {
+		return x.Block
+	}
+	return nil
+}
+
+func (x *BlockPlace) GetReplaced() *Block {
+	if x != nil {
+		return x.Replaced
+	}
+	return nil
+}
+
+func (x *BlockPlace) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+func (x *BlockPlace) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+type PlayerQuit struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
