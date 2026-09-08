@@ -601,6 +601,96 @@ type PlayerDamage struct {
 	Cause         string                 `protobuf:"bytes,3,opt,name=cause,proto3" json:"cause,omitempty"`
 	Perms         map[string]bool        `protobuf:"bytes,4,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerDamage) Reset() {
+	*x = PlayerDamage{}
+	mi := &file_abi_v1_events_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerDamage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerDamage) ProtoMessage() {}
+
+func (x *PlayerDamage) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerDamage.ProtoReflect.Descriptor instead.
+func (*PlayerDamage) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *PlayerDamage) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerDamage) GetDamage() float64 {
+	if x != nil {
+		return x.Damage
+	}
+	return 0
+}
+
+func (x *PlayerDamage) GetCause() string {
+	if x != nil {
+		return x.Cause
+	}
+	return ""
+}
+
+func (x *PlayerDamage) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+type PlayerDeath struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Cause         string                 `protobuf:"bytes,2,opt,name=cause,proto3" json:"cause,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerDeath) Reset() {
+	*x = PlayerDeath{}
+	mi := &file_abi_v1_events_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerDeath) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerDeath) ProtoMessage() {}
+
+func (x *PlayerDeath) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
