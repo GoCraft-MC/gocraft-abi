@@ -1397,7 +1397,7 @@ func file_abi_v1_events_proto_rawDescGZIP() []byte {
 	return file_abi_v1_events_proto_rawDescData
 }
 
-var file_abi_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_abi_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_abi_v1_events_proto_goTypes = []any{
 	(*PlayerRef)(nil),  // 0: gocraft.abi.v1.PlayerRef
 	(*BlockPos)(nil),   // 1: gocraft.abi.v1.BlockPos
