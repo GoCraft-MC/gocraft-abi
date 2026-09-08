@@ -421,6 +421,96 @@ type PlayerQuit struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
 	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerQuit) Reset() {
+	*x = PlayerQuit{}
+	mi := &file_abi_v1_events_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerQuit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerQuit) ProtoMessage() {}
+
+func (x *PlayerQuit) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerQuit.ProtoReflect.Descriptor instead.
+func (*PlayerQuit) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PlayerQuit) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerQuit) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+// The unformatted chat text, before broadcasting. A rewritten message is
+// never reinterpreted as a command.
+type PlayerChat struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,3,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerChat) Reset() {
+	*x = PlayerChat{}
+	mi := &file_abi_v1_events_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerChat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerChat) ProtoMessage() {}
+
+func (x *PlayerChat) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerChat.ProtoReflect.Descriptor instead.
+func (*PlayerChat) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *PlayerChat) GetPlayer() *PlayerRef {
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
