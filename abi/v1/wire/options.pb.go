@@ -269,11 +269,12 @@ var file_abi_v1_options_proto_depIdxs = []int32{
 	2, // 1: gocraft.abi.v1.EventOptions.on_failure:type_name -> gocraft.abi.v1.FailurePolicy
 	3, // 2: gocraft.abi.v1.event:extendee -> google.protobuf.MessageOptions
 	4, // 3: gocraft.abi.v1.injected:extendee -> google.protobuf.FieldOptions
-	1, // 4: gocraft.abi.v1.event:type_name -> gocraft.abi.v1.EventOptions
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	4, // [4:5] is the sub-list for extension type_name
-	2, // [2:4] is the sub-list for extension extendee
+	4, // 4: gocraft.abi.v1.mutable:extendee -> google.protobuf.FieldOptions
+	1, // 5: gocraft.abi.v1.event:type_name -> gocraft.abi.v1.EventOptions
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	5, // [5:6] is the sub-list for extension type_name
+	2, // [2:5] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
 }
 
