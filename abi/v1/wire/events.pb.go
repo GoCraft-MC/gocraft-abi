@@ -691,6 +691,96 @@ func (x *PlayerDeath) ProtoReflect() protoreflect.Message {
 			ms.StoreMessageInfo(mi)
 		}
 		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerDeath.ProtoReflect.Descriptor instead.
+func (*PlayerDeath) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *PlayerDeath) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerDeath) GetCause() string {
+	if x != nil {
+		return x.Cause
+	}
+	return ""
+}
+
+// Notification after a dead player has successfully respawned.
+type PlayerRespawn struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	X             float64                `protobuf:"fixed64,2,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float64                `protobuf:"fixed64,3,opt,name=y,proto3" json:"y,omitempty"`
+	Z             float64                `protobuf:"fixed64,4,opt,name=z,proto3" json:"z,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,5,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerRespawn) Reset() {
+	*x = PlayerRespawn{}
+	mi := &file_abi_v1_events_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerRespawn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerRespawn) ProtoMessage() {}
+
+func (x *PlayerRespawn) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerRespawn.ProtoReflect.Descriptor instead.
+func (*PlayerRespawn) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PlayerRespawn) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerRespawn) GetX() float64 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *PlayerRespawn) GetY() float64 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *PlayerRespawn) GetZ() float64 {
+	if x != nil {
+		return x.Z
+	}
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
