@@ -33,6 +33,9 @@ extend google.protobuf.MessageOptions {
 // as a query method rather than as a map to rummage through.
 extend google.protobuf.FieldOptions {
   bool injected = 50002;
+  // Only explicitly mutable native fields may be returned in a verdict.
+  // This annotates the existing positional Mutation transport; it adds no frame.
+  bool mutable = 50003;
 }
 
 message EventOptions {

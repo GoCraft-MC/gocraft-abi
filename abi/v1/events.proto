@@ -91,3 +91,133 @@ message PlayerJoin {
   PlayerRef player = 1;
   map<string, bool> perms = 2 [(gocraft.abi.v1.injected) = true];
 }
+
+// Fired only after a valid placement has been computed, before any block or
+// item changes. Multi-block structures produce one event for the primary block.
+message BlockPlace {
+  option (gocraft.abi.v1.event) = { type: "block.place" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  BlockPos pos = 2;
+  Block block = 3;
+  Block replaced = 4;
+  sint64 dimension = 5;
+  map<string, bool> perms = 6 [(gocraft.abi.v1.injected) = true];
+}
+
+message PlayerQuit {
+  option (gocraft.abi.v1.event) = { type: "player.quit"
+    phase: PHASE_OBSERVATIONAL on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  string reason = 2;
+}
+
+// The unformatted chat text, before broadcasting. A rewritten message is
+// never reinterpreted as a command.
+message PlayerChat {
+  option (gocraft.abi.v1.event) = { type: "player.chat" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  string message = 2 [(gocraft.abi.v1.mutable) = true];
+  map<string, bool> perms = 3 [(gocraft.abi.v1.injected) = true];
+}
+
+// Permissions and argument parsing run AFTER plugins rewrite the command.
+message PlayerCommand {
+  option (gocraft.abi.v1.event) = { type: "player.command" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  string command = 2 [(gocraft.abi.v1.mutable) = true];
+  map<string, bool> perms = 3 [(gocraft.abi.v1.injected) = true];
+}
+
+// Damage entering the player's health pipeline, before resistance and
+// absorption. Armour already applied by the caller is not applied again.
+message PlayerDamage {
+  option (gocraft.abi.v1.event) = { type: "player.damage" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  double damage = 2 [(gocraft.abi.v1.mutable) = true];
+  string cause = 3;
+  map<string, bool> perms = 4 [(gocraft.abi.v1.injected) = true];
+}
+
+message PlayerDeath {
+  option (gocraft.abi.v1.event) = { type: "player.death"
+    phase: PHASE_OBSERVATIONAL on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  string cause = 2;
+}
+
+// Notification after a dead player has successfully respawned.
+message PlayerRespawn {
+  option (gocraft.abi.v1.event) = { type: "player.respawn"
+    phase: PHASE_OBSERVATIONAL on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  double x = 2;
+  double y = 3;
+  double z = 4;
+  sint64 dimension = 5;
+}
+
+message PlayerTeleport {
+  option (gocraft.abi.v1.event) = { type: "player.teleport" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  double from_x = 2;
+  double from_y = 3;
+  double from_z = 4;
+  double x = 5 [(gocraft.abi.v1.mutable) = true];
+  double y = 6 [(gocraft.abi.v1.mutable) = true];
+  double z = 7 [(gocraft.abi.v1.mutable) = true];
+  sint64 dimension = 8;
+  map<string, bool> perms = 9 [(gocraft.abi.v1.injected) = true];
+}
+
+// An attempted main-hand block/entity interaction. Cancelling prevents the
+// associated use/boarding/trade action; it does not describe an attack.
+message PlayerInteract {
+  option (gocraft.abi.v1.event) = { type: "player.interact" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  string target = 2;
+  BlockPos pos = 3;
+  sint64 entity_id = 4;
+  string item = 5;
+  sint64 dimension = 6;
+  map<string, bool> perms = 7 [(gocraft.abi.v1.injected) = true];
+}
+
+// Java container clicks and Bedrock normal inventory transactions. Slot -1
+// means an edition's transaction spans several slots rather than one click.
+message InventoryClick {
+  option (gocraft.abi.v1.event) = { type: "inventory.click" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  string container = 2;
+  sint64 slot = 3;
+  sint64 button = 4;
+  sint64 mode = 5;
+  map<string, bool> perms = 6 [(gocraft.abi.v1.injected) = true];
+}
+
+// A use-in-air item action, not use-on-block or inventory movement.
+message ItemUse {
+  option (gocraft.abi.v1.event) = { type: "item.use" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  PlayerRef player = 1;
+  string item = 2;
+  sint64 hand = 3;
+  map<string, bool> perms = 4 [(gocraft.abi.v1.injected) = true];
+}
+
+// Non-player entity damage. Players use player.damage, never both events.
+message EntityDamage {
+  option (gocraft.abi.v1.event) = { type: "entity.damage" cancellable: true
+    phase: PHASE_TICK_BLOCKING on_failure: FAILURE_POLICY_ALLOW since: 1 };
+  sint64 entity_id = 1;
+  string entity_type = 2;
+  double damage = 3 [(gocraft.abi.v1.mutable) = true];
+  string cause = 4;
+  sint64 dimension = 5;
+}

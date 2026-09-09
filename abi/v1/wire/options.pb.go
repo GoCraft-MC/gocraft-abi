@@ -194,6 +194,14 @@ var file_abi_v1_options_proto_extTypes = []protoimpl.ExtensionInfo{
 		Tag:           "varint,50002,opt,name=injected",
 		Filename:      "abi/v1/options.proto",
 	},
+	{
+		ExtendedType:  (*descriptorpb.FieldOptions)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         50003,
+		Name:          "gocraft.abi.v1.mutable",
+		Tag:           "varint,50003,opt,name=mutable",
+		Filename:      "abi/v1/options.proto",
+	},
 }
 
 // Extension fields to descriptorpb.MessageOptions.
@@ -206,6 +214,11 @@ var (
 var (
 	// optional bool injected = 50002;
 	E_Injected = &file_abi_v1_options_proto_extTypes[1]
+	// Only explicitly mutable native fields may be returned in a verdict.
+	// This annotates the existing positional Mutation transport; it adds no frame.
+	//
+	// optional bool mutable = 50003;
+	E_Mutable = &file_abi_v1_options_proto_extTypes[2]
 )
 
 var File_abi_v1_options_proto protoreflect.FileDescriptor
@@ -226,7 +239,8 @@ const file_abi_v1_options_proto_rawDesc = "" +
 	"\x13PHASE_TICK_BLOCKING\x10\x01\x12\x17\n" +
 	"\x13PHASE_OBSERVATIONAL\x10\x02:U\n" +
 	"\x05event\x12\x1f.google.protobuf.MessageOptions\x18ц\x03 \x01(\v2\x1c.gocraft.abi.v1.EventOptionsR\x05event:;\n" +
-	"\binjected\x12\x1d.google.protobuf.FieldOptions\x18҆\x03 \x01(\bR\binjectedBW\n" +
+	"\binjected\x12\x1d.google.protobuf.FieldOptions\x18҆\x03 \x01(\bR\binjected:9\n" +
+	"\amutable\x12\x1d.google.protobuf.FieldOptions\x18ӆ\x03 \x01(\bR\amutableBW\n" +
 	"\x11fr.gocraft.abi.v1B\fOptionsProtoP\x01Z2github.com/GoCraft-MC/gocraft-abi/abi/v1/wire;wireb\x06proto3"
 
 var (
@@ -255,11 +269,12 @@ var file_abi_v1_options_proto_depIdxs = []int32{
 	2, // 1: gocraft.abi.v1.EventOptions.on_failure:type_name -> gocraft.abi.v1.FailurePolicy
 	3, // 2: gocraft.abi.v1.event:extendee -> google.protobuf.MessageOptions
 	4, // 3: gocraft.abi.v1.injected:extendee -> google.protobuf.FieldOptions
-	1, // 4: gocraft.abi.v1.event:type_name -> gocraft.abi.v1.EventOptions
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	4, // [4:5] is the sub-list for extension type_name
-	2, // [2:4] is the sub-list for extension extendee
+	4, // 4: gocraft.abi.v1.mutable:extendee -> google.protobuf.FieldOptions
+	1, // 5: gocraft.abi.v1.event:type_name -> gocraft.abi.v1.EventOptions
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	5, // [5:6] is the sub-list for extension type_name
+	2, // [2:5] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
 }
 
@@ -276,7 +291,7 @@ func file_abi_v1_options_proto_init() {
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_abi_v1_options_proto_rawDesc), len(file_abi_v1_options_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   1,
-			NumExtensions: 2,
+			NumExtensions: 3,
 			NumServices:   0,
 		},
 		GoTypes:           file_abi_v1_options_proto_goTypes,

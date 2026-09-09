@@ -331,6 +331,900 @@ func (x *PlayerJoin) GetPerms() map[string]bool {
 	return nil
 }
 
+// Fired only after a valid placement has been computed, before any block or
+// item changes. Multi-block structures produce one event for the primary block.
+type BlockPlace struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Pos           *BlockPos              `protobuf:"bytes,2,opt,name=pos,proto3" json:"pos,omitempty"`
+	Block         *Block                 `protobuf:"bytes,3,opt,name=block,proto3" json:"block,omitempty"`
+	Replaced      *Block                 `protobuf:"bytes,4,opt,name=replaced,proto3" json:"replaced,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,5,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,6,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BlockPlace) Reset() {
+	*x = BlockPlace{}
+	mi := &file_abi_v1_events_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BlockPlace) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlockPlace) ProtoMessage() {}
+
+func (x *BlockPlace) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlockPlace.ProtoReflect.Descriptor instead.
+func (*BlockPlace) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *BlockPlace) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *BlockPlace) GetPos() *BlockPos {
+	if x != nil {
+		return x.Pos
+	}
+	return nil
+}
+
+func (x *BlockPlace) GetBlock() *Block {
+	if x != nil {
+		return x.Block
+	}
+	return nil
+}
+
+func (x *BlockPlace) GetReplaced() *Block {
+	if x != nil {
+		return x.Replaced
+	}
+	return nil
+}
+
+func (x *BlockPlace) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+func (x *BlockPlace) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+type PlayerQuit struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerQuit) Reset() {
+	*x = PlayerQuit{}
+	mi := &file_abi_v1_events_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerQuit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerQuit) ProtoMessage() {}
+
+func (x *PlayerQuit) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerQuit.ProtoReflect.Descriptor instead.
+func (*PlayerQuit) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PlayerQuit) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerQuit) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+// The unformatted chat text, before broadcasting. A rewritten message is
+// never reinterpreted as a command.
+type PlayerChat struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,3,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerChat) Reset() {
+	*x = PlayerChat{}
+	mi := &file_abi_v1_events_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerChat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerChat) ProtoMessage() {}
+
+func (x *PlayerChat) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerChat.ProtoReflect.Descriptor instead.
+func (*PlayerChat) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *PlayerChat) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerChat) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *PlayerChat) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// Permissions and argument parsing run AFTER plugins rewrite the command.
+type PlayerCommand struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Command       string                 `protobuf:"bytes,2,opt,name=command,proto3" json:"command,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,3,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerCommand) Reset() {
+	*x = PlayerCommand{}
+	mi := &file_abi_v1_events_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerCommand) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerCommand) ProtoMessage() {}
+
+func (x *PlayerCommand) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerCommand.ProtoReflect.Descriptor instead.
+func (*PlayerCommand) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PlayerCommand) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerCommand) GetCommand() string {
+	if x != nil {
+		return x.Command
+	}
+	return ""
+}
+
+func (x *PlayerCommand) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// Damage entering the player's health pipeline, before resistance and
+// absorption. Armour already applied by the caller is not applied again.
+type PlayerDamage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Damage        float64                `protobuf:"fixed64,2,opt,name=damage,proto3" json:"damage,omitempty"`
+	Cause         string                 `protobuf:"bytes,3,opt,name=cause,proto3" json:"cause,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,4,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerDamage) Reset() {
+	*x = PlayerDamage{}
+	mi := &file_abi_v1_events_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerDamage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerDamage) ProtoMessage() {}
+
+func (x *PlayerDamage) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerDamage.ProtoReflect.Descriptor instead.
+func (*PlayerDamage) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *PlayerDamage) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerDamage) GetDamage() float64 {
+	if x != nil {
+		return x.Damage
+	}
+	return 0
+}
+
+func (x *PlayerDamage) GetCause() string {
+	if x != nil {
+		return x.Cause
+	}
+	return ""
+}
+
+func (x *PlayerDamage) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+type PlayerDeath struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Cause         string                 `protobuf:"bytes,2,opt,name=cause,proto3" json:"cause,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerDeath) Reset() {
+	*x = PlayerDeath{}
+	mi := &file_abi_v1_events_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerDeath) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerDeath) ProtoMessage() {}
+
+func (x *PlayerDeath) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerDeath.ProtoReflect.Descriptor instead.
+func (*PlayerDeath) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *PlayerDeath) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerDeath) GetCause() string {
+	if x != nil {
+		return x.Cause
+	}
+	return ""
+}
+
+// Notification after a dead player has successfully respawned.
+type PlayerRespawn struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	X             float64                `protobuf:"fixed64,2,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float64                `protobuf:"fixed64,3,opt,name=y,proto3" json:"y,omitempty"`
+	Z             float64                `protobuf:"fixed64,4,opt,name=z,proto3" json:"z,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,5,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerRespawn) Reset() {
+	*x = PlayerRespawn{}
+	mi := &file_abi_v1_events_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerRespawn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerRespawn) ProtoMessage() {}
+
+func (x *PlayerRespawn) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerRespawn.ProtoReflect.Descriptor instead.
+func (*PlayerRespawn) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PlayerRespawn) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerRespawn) GetX() float64 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *PlayerRespawn) GetY() float64 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *PlayerRespawn) GetZ() float64 {
+	if x != nil {
+		return x.Z
+	}
+	return 0
+}
+
+func (x *PlayerRespawn) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+type PlayerTeleport struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	FromX         float64                `protobuf:"fixed64,2,opt,name=from_x,json=fromX,proto3" json:"from_x,omitempty"`
+	FromY         float64                `protobuf:"fixed64,3,opt,name=from_y,json=fromY,proto3" json:"from_y,omitempty"`
+	FromZ         float64                `protobuf:"fixed64,4,opt,name=from_z,json=fromZ,proto3" json:"from_z,omitempty"`
+	X             float64                `protobuf:"fixed64,5,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float64                `protobuf:"fixed64,6,opt,name=y,proto3" json:"y,omitempty"`
+	Z             float64                `protobuf:"fixed64,7,opt,name=z,proto3" json:"z,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,8,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,9,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerTeleport) Reset() {
+	*x = PlayerTeleport{}
+	mi := &file_abi_v1_events_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerTeleport) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerTeleport) ProtoMessage() {}
+
+func (x *PlayerTeleport) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerTeleport.ProtoReflect.Descriptor instead.
+func (*PlayerTeleport) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *PlayerTeleport) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerTeleport) GetFromX() float64 {
+	if x != nil {
+		return x.FromX
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetFromY() float64 {
+	if x != nil {
+		return x.FromY
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetFromZ() float64 {
+	if x != nil {
+		return x.FromZ
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetX() float64 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetY() float64 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetZ() float64 {
+	if x != nil {
+		return x.Z
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+func (x *PlayerTeleport) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// An attempted main-hand block/entity interaction. Cancelling prevents the
+// associated use/boarding/trade action; it does not describe an attack.
+type PlayerInteract struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Target        string                 `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
+	Pos           *BlockPos              `protobuf:"bytes,3,opt,name=pos,proto3" json:"pos,omitempty"`
+	EntityId      int64                  `protobuf:"zigzag64,4,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	Item          string                 `protobuf:"bytes,5,opt,name=item,proto3" json:"item,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,6,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,7,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerInteract) Reset() {
+	*x = PlayerInteract{}
+	mi := &file_abi_v1_events_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerInteract) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerInteract) ProtoMessage() {}
+
+func (x *PlayerInteract) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerInteract.ProtoReflect.Descriptor instead.
+func (*PlayerInteract) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *PlayerInteract) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *PlayerInteract) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
+func (x *PlayerInteract) GetPos() *BlockPos {
+	if x != nil {
+		return x.Pos
+	}
+	return nil
+}
+
+func (x *PlayerInteract) GetEntityId() int64 {
+	if x != nil {
+		return x.EntityId
+	}
+	return 0
+}
+
+func (x *PlayerInteract) GetItem() string {
+	if x != nil {
+		return x.Item
+	}
+	return ""
+}
+
+func (x *PlayerInteract) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
+func (x *PlayerInteract) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// Java container clicks and Bedrock normal inventory transactions. Slot -1
+// means an edition's transaction spans several slots rather than one click.
+type InventoryClick struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Container     string                 `protobuf:"bytes,2,opt,name=container,proto3" json:"container,omitempty"`
+	Slot          int64                  `protobuf:"zigzag64,3,opt,name=slot,proto3" json:"slot,omitempty"`
+	Button        int64                  `protobuf:"zigzag64,4,opt,name=button,proto3" json:"button,omitempty"`
+	Mode          int64                  `protobuf:"zigzag64,5,opt,name=mode,proto3" json:"mode,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,6,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InventoryClick) Reset() {
+	*x = InventoryClick{}
+	mi := &file_abi_v1_events_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InventoryClick) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InventoryClick) ProtoMessage() {}
+
+func (x *InventoryClick) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InventoryClick.ProtoReflect.Descriptor instead.
+func (*InventoryClick) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *InventoryClick) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *InventoryClick) GetContainer() string {
+	if x != nil {
+		return x.Container
+	}
+	return ""
+}
+
+func (x *InventoryClick) GetSlot() int64 {
+	if x != nil {
+		return x.Slot
+	}
+	return 0
+}
+
+func (x *InventoryClick) GetButton() int64 {
+	if x != nil {
+		return x.Button
+	}
+	return 0
+}
+
+func (x *InventoryClick) GetMode() int64 {
+	if x != nil {
+		return x.Mode
+	}
+	return 0
+}
+
+func (x *InventoryClick) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// A use-in-air item action, not use-on-block or inventory movement.
+type ItemUse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        *PlayerRef             `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	Item          string                 `protobuf:"bytes,2,opt,name=item,proto3" json:"item,omitempty"`
+	Hand          int64                  `protobuf:"zigzag64,3,opt,name=hand,proto3" json:"hand,omitempty"`
+	Perms         map[string]bool        `protobuf:"bytes,4,rep,name=perms,proto3" json:"perms,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ItemUse) Reset() {
+	*x = ItemUse{}
+	mi := &file_abi_v1_events_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ItemUse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ItemUse) ProtoMessage() {}
+
+func (x *ItemUse) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ItemUse.ProtoReflect.Descriptor instead.
+func (*ItemUse) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ItemUse) GetPlayer() *PlayerRef {
+	if x != nil {
+		return x.Player
+	}
+	return nil
+}
+
+func (x *ItemUse) GetItem() string {
+	if x != nil {
+		return x.Item
+	}
+	return ""
+}
+
+func (x *ItemUse) GetHand() int64 {
+	if x != nil {
+		return x.Hand
+	}
+	return 0
+}
+
+func (x *ItemUse) GetPerms() map[string]bool {
+	if x != nil {
+		return x.Perms
+	}
+	return nil
+}
+
+// Non-player entity damage. Players use player.damage, never both events.
+type EntityDamage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EntityId      int64                  `protobuf:"zigzag64,1,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	EntityType    string                 `protobuf:"bytes,2,opt,name=entity_type,json=entityType,proto3" json:"entity_type,omitempty"`
+	Damage        float64                `protobuf:"fixed64,3,opt,name=damage,proto3" json:"damage,omitempty"`
+	Cause         string                 `protobuf:"bytes,4,opt,name=cause,proto3" json:"cause,omitempty"`
+	Dimension     int64                  `protobuf:"zigzag64,5,opt,name=dimension,proto3" json:"dimension,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EntityDamage) Reset() {
+	*x = EntityDamage{}
+	mi := &file_abi_v1_events_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EntityDamage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EntityDamage) ProtoMessage() {}
+
+func (x *EntityDamage) ProtoReflect() protoreflect.Message {
+	mi := &file_abi_v1_events_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EntityDamage.ProtoReflect.Descriptor instead.
+func (*EntityDamage) Descriptor() ([]byte, []int) {
+	return file_abi_v1_events_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *EntityDamage) GetEntityId() int64 {
+	if x != nil {
+		return x.EntityId
+	}
+	return 0
+}
+
+func (x *EntityDamage) GetEntityType() string {
+	if x != nil {
+		return x.EntityType
+	}
+	return ""
+}
+
+func (x *EntityDamage) GetDamage() float64 {
+	if x != nil {
+		return x.Damage
+	}
+	return 0
+}
+
+func (x *EntityDamage) GetCause() string {
+	if x != nil {
+		return x.Cause
+	}
+	return ""
+}
+
+func (x *EntityDamage) GetDimension() int64 {
+	if x != nil {
+		return x.Dimension
+	}
+	return 0
+}
+
 var File_abi_v1_events_proto protoreflect.FileDescriptor
 
 const file_abi_v1_events_proto_rawDesc = "" +
@@ -372,7 +1266,123 @@ const file_abi_v1_events_proto_rawDesc = "" +
 	"PermsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01: \x8a\xb5\x18\x1c\n" +
-	"\vplayer.join\x18\x02 \x01*\amessage0\x01BV\n" +
+	"\vplayer.join\x18\x02 \x01*\amessage0\x01\"\x81\x03\n" +
+	"\n" +
+	"BlockPlace\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12*\n" +
+	"\x03pos\x18\x02 \x01(\v2\x18.gocraft.abi.v1.BlockPosR\x03pos\x12+\n" +
+	"\x05block\x18\x03 \x01(\v2\x15.gocraft.abi.v1.BlockR\x05block\x121\n" +
+	"\breplaced\x18\x04 \x01(\v2\x15.gocraft.abi.v1.BlockR\breplaced\x12\x1c\n" +
+	"\tdimension\x18\x05 \x01(\x12R\tdimension\x12A\n" +
+	"\x05perms\x18\x06 \x03(\v2%.gocraft.abi.v1.BlockPlace.PermsEntryB\x04\x90\xb5\x18\x01R\x05perms\x1a8\n" +
+	"\n" +
+	"PermsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01:\x19\x8a\xb5\x18\x15\n" +
+	"\vblock.place\x10\x01\x18\x01 \x010\x01\"p\n" +
+	"\n" +
+	"PlayerQuit\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason:\x17\x8a\xb5\x18\x13\n" +
+	"\vplayer.quit\x18\x02 \x010\x01\"\xf7\x01\n" +
+	"\n" +
+	"PlayerChat\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x1e\n" +
+	"\amessage\x18\x02 \x01(\tB\x04\x98\xb5\x18\x01R\amessage\x12A\n" +
+	"\x05perms\x18\x03 \x03(\v2%.gocraft.abi.v1.PlayerChat.PermsEntryB\x04\x90\xb5\x18\x01R\x05perms\x1a8\n" +
+	"\n" +
+	"PermsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01:\x19\x8a\xb5\x18\x15\n" +
+	"\vplayer.chat\x10\x01\x18\x01 \x010\x01\"\x80\x02\n" +
+	"\rPlayerCommand\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x1e\n" +
+	"\acommand\x18\x02 \x01(\tB\x04\x98\xb5\x18\x01R\acommand\x12D\n" +
+	"\x05perms\x18\x03 \x03(\v2(.gocraft.abi.v1.PlayerCommand.PermsEntryB\x04\x90\xb5\x18\x01R\x05perms\x1a8\n" +
+	"\n" +
+	"PermsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01:\x1c\x8a\xb5\x18\x18\n" +
+	"\x0eplayer.command\x10\x01\x18\x01 \x010\x01\"\x91\x02\n" +
+	"\fPlayerDamage\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x1c\n" +
+	"\x06damage\x18\x02 \x01(\x01B\x04\x98\xb5\x18\x01R\x06damage\x12\x14\n" +
+	"\x05cause\x18\x03 \x01(\tR\x05cause\x12C\n" +
+	"\x05perms\x18\x04 \x03(\v2'.gocraft.abi.v1.PlayerDamage.PermsEntryB\x04\x90\xb5\x18\x01R\x05perms\x1a8\n" +
+	"\n" +
+	"PermsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01:\x1b\x8a\xb5\x18\x17\n" +
+	"\rplayer.damage\x10\x01\x18\x01 \x010\x01\"p\n" +
+	"\vPlayerDeath\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x14\n" +
+	"\x05cause\x18\x02 \x01(\tR\x05cause:\x18\x8a\xb5\x18\x14\n" +
+	"\fplayer.death\x18\x02 \x010\x01\"\xa6\x01\n" +
+	"\rPlayerRespawn\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\f\n" +
+	"\x01x\x18\x02 \x01(\x01R\x01x\x12\f\n" +
+	"\x01y\x18\x03 \x01(\x01R\x01y\x12\f\n" +
+	"\x01z\x18\x04 \x01(\x01R\x01z\x12\x1c\n" +
+	"\tdimension\x18\x05 \x01(\x12R\tdimension:\x1a\x8a\xb5\x18\x16\n" +
+	"\x0eplayer.respawn\x18\x02 \x010\x01\"\x82\x03\n" +
+	"\x0ePlayerTeleport\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x15\n" +
+	"\x06from_x\x18\x02 \x01(\x01R\x05fromX\x12\x15\n" +
+	"\x06from_y\x18\x03 \x01(\x01R\x05fromY\x12\x15\n" +
+	"\x06from_z\x18\x04 \x01(\x01R\x05fromZ\x12\x12\n" +
+	"\x01x\x18\x05 \x01(\x01B\x04\x98\xb5\x18\x01R\x01x\x12\x12\n" +
+	"\x01y\x18\x06 \x01(\x01B\x04\x98\xb5\x18\x01R\x01y\x12\x12\n" +
+	"\x01z\x18\a \x01(\x01B\x04\x98\xb5\x18\x01R\x01z\x12\x1c\n" +
+	"\tdimension\x18\b \x01(\x12R\tdimension\x12E\n" +
+	"\x05perms\x18\t \x03(\v2).gocraft.abi.v1.PlayerTeleport.PermsEntryB\x04\x90\xb5\x18\x01R\x05perms\x1a8\n" +
+	"\n" +
+	"PermsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01:\x1d\x8a\xb5\x18\x19\n" +
+	"\x0fplayer.teleport\x10\x01\x18\x01 \x010\x01\"\xf6\x02\n" +
+	"\x0ePlayerInteract\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x16\n" +
+	"\x06target\x18\x02 \x01(\tR\x06target\x12*\n" +
+	"\x03pos\x18\x03 \x01(\v2\x18.gocraft.abi.v1.BlockPosR\x03pos\x12\x1b\n" +
+	"\tentity_id\x18\x04 \x01(\x12R\bentityId\x12\x12\n" +
+	"\x04item\x18\x05 \x01(\tR\x04item\x12\x1c\n" +
+	"\tdimension\x18\x06 \x01(\x12R\tdimension\x12E\n" +
+	"\x05perms\x18\a \x03(\v2).gocraft.abi.v1.PlayerInteract.PermsEntryB\x04\x90\xb5\x18\x01R\x05perms\x1a8\n" +
+	"\n" +
+	"PermsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01:\x1d\x8a\xb5\x18\x19\n" +
+	"\x0fplayer.interact\x10\x01\x18\x01 \x010\x01\"\xc1\x02\n" +
+	"\x0eInventoryClick\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x1c\n" +
+	"\tcontainer\x18\x02 \x01(\tR\tcontainer\x12\x12\n" +
+	"\x04slot\x18\x03 \x01(\x12R\x04slot\x12\x16\n" +
+	"\x06button\x18\x04 \x01(\x12R\x06button\x12\x12\n" +
+	"\x04mode\x18\x05 \x01(\x12R\x04mode\x12E\n" +
+	"\x05perms\x18\x06 \x03(\v2).gocraft.abi.v1.InventoryClick.PermsEntryB\x04\x90\xb5\x18\x01R\x05perms\x1a8\n" +
+	"\n" +
+	"PermsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01:\x1d\x8a\xb5\x18\x19\n" +
+	"\x0finventory.click\x10\x01\x18\x01 \x010\x01\"\xf6\x01\n" +
+	"\aItemUse\x121\n" +
+	"\x06player\x18\x01 \x01(\v2\x19.gocraft.abi.v1.PlayerRefR\x06player\x12\x12\n" +
+	"\x04item\x18\x02 \x01(\tR\x04item\x12\x12\n" +
+	"\x04hand\x18\x03 \x01(\x12R\x04hand\x12>\n" +
+	"\x05perms\x18\x04 \x03(\v2\".gocraft.abi.v1.ItemUse.PermsEntryB\x04\x90\xb5\x18\x01R\x05perms\x1a8\n" +
+	"\n" +
+	"PermsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01:\x16\x8a\xb5\x18\x12\n" +
+	"\bitem.use\x10\x01\x18\x01 \x010\x01\"\xbb\x01\n" +
+	"\fEntityDamage\x12\x1b\n" +
+	"\tentity_id\x18\x01 \x01(\x12R\bentityId\x12\x1f\n" +
+	"\ventity_type\x18\x02 \x01(\tR\n" +
+	"entityType\x12\x1c\n" +
+	"\x06damage\x18\x03 \x01(\x01B\x04\x98\xb5\x18\x01R\x06damage\x12\x14\n" +
+	"\x05cause\x18\x04 \x01(\tR\x05cause\x12\x1c\n" +
+	"\tdimension\x18\x05 \x01(\x12R\tdimension:\x1b\x8a\xb5\x18\x17\n" +
+	"\rentity.damage\x10\x01\x18\x01 \x010\x01BV\n" +
 	"\x11fr.gocraft.abi.v1B\vEventsProtoP\x01Z2github.com/GoCraft-MC/gocraft-abi/abi/v1/wire;wireb\x06proto3"
 
 var (
@@ -387,30 +1397,73 @@ func file_abi_v1_events_proto_rawDescGZIP() []byte {
 	return file_abi_v1_events_proto_rawDescData
 }
 
-var file_abi_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_abi_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_abi_v1_events_proto_goTypes = []any{
-	(*PlayerRef)(nil),  // 0: gocraft.abi.v1.PlayerRef
-	(*BlockPos)(nil),   // 1: gocraft.abi.v1.BlockPos
-	(*Block)(nil),      // 2: gocraft.abi.v1.Block
-	(*BlockBreak)(nil), // 3: gocraft.abi.v1.BlockBreak
-	(*PlayerJoin)(nil), // 4: gocraft.abi.v1.PlayerJoin
-	nil,                // 5: gocraft.abi.v1.Block.PropertiesEntry
-	nil,                // 6: gocraft.abi.v1.BlockBreak.PermsEntry
-	nil,                // 7: gocraft.abi.v1.PlayerJoin.PermsEntry
+	(*PlayerRef)(nil),      // 0: gocraft.abi.v1.PlayerRef
+	(*BlockPos)(nil),       // 1: gocraft.abi.v1.BlockPos
+	(*Block)(nil),          // 2: gocraft.abi.v1.Block
+	(*BlockBreak)(nil),     // 3: gocraft.abi.v1.BlockBreak
+	(*PlayerJoin)(nil),     // 4: gocraft.abi.v1.PlayerJoin
+	(*BlockPlace)(nil),     // 5: gocraft.abi.v1.BlockPlace
+	(*PlayerQuit)(nil),     // 6: gocraft.abi.v1.PlayerQuit
+	(*PlayerChat)(nil),     // 7: gocraft.abi.v1.PlayerChat
+	(*PlayerCommand)(nil),  // 8: gocraft.abi.v1.PlayerCommand
+	(*PlayerDamage)(nil),   // 9: gocraft.abi.v1.PlayerDamage
+	(*PlayerDeath)(nil),    // 10: gocraft.abi.v1.PlayerDeath
+	(*PlayerRespawn)(nil),  // 11: gocraft.abi.v1.PlayerRespawn
+	(*PlayerTeleport)(nil), // 12: gocraft.abi.v1.PlayerTeleport
+	(*PlayerInteract)(nil), // 13: gocraft.abi.v1.PlayerInteract
+	(*InventoryClick)(nil), // 14: gocraft.abi.v1.InventoryClick
+	(*ItemUse)(nil),        // 15: gocraft.abi.v1.ItemUse
+	(*EntityDamage)(nil),   // 16: gocraft.abi.v1.EntityDamage
+	nil,                    // 17: gocraft.abi.v1.Block.PropertiesEntry
+	nil,                    // 18: gocraft.abi.v1.BlockBreak.PermsEntry
+	nil,                    // 19: gocraft.abi.v1.PlayerJoin.PermsEntry
+	nil,                    // 20: gocraft.abi.v1.BlockPlace.PermsEntry
+	nil,                    // 21: gocraft.abi.v1.PlayerChat.PermsEntry
+	nil,                    // 22: gocraft.abi.v1.PlayerCommand.PermsEntry
+	nil,                    // 23: gocraft.abi.v1.PlayerDamage.PermsEntry
+	nil,                    // 24: gocraft.abi.v1.PlayerTeleport.PermsEntry
+	nil,                    // 25: gocraft.abi.v1.PlayerInteract.PermsEntry
+	nil,                    // 26: gocraft.abi.v1.InventoryClick.PermsEntry
+	nil,                    // 27: gocraft.abi.v1.ItemUse.PermsEntry
 }
 var file_abi_v1_events_proto_depIdxs = []int32{
-	5, // 0: gocraft.abi.v1.Block.properties:type_name -> gocraft.abi.v1.Block.PropertiesEntry
-	0, // 1: gocraft.abi.v1.BlockBreak.player:type_name -> gocraft.abi.v1.PlayerRef
-	1, // 2: gocraft.abi.v1.BlockBreak.pos:type_name -> gocraft.abi.v1.BlockPos
-	2, // 3: gocraft.abi.v1.BlockBreak.block:type_name -> gocraft.abi.v1.Block
-	6, // 4: gocraft.abi.v1.BlockBreak.perms:type_name -> gocraft.abi.v1.BlockBreak.PermsEntry
-	0, // 5: gocraft.abi.v1.PlayerJoin.player:type_name -> gocraft.abi.v1.PlayerRef
-	7, // 6: gocraft.abi.v1.PlayerJoin.perms:type_name -> gocraft.abi.v1.PlayerJoin.PermsEntry
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	17, // 0: gocraft.abi.v1.Block.properties:type_name -> gocraft.abi.v1.Block.PropertiesEntry
+	0,  // 1: gocraft.abi.v1.BlockBreak.player:type_name -> gocraft.abi.v1.PlayerRef
+	1,  // 2: gocraft.abi.v1.BlockBreak.pos:type_name -> gocraft.abi.v1.BlockPos
+	2,  // 3: gocraft.abi.v1.BlockBreak.block:type_name -> gocraft.abi.v1.Block
+	18, // 4: gocraft.abi.v1.BlockBreak.perms:type_name -> gocraft.abi.v1.BlockBreak.PermsEntry
+	0,  // 5: gocraft.abi.v1.PlayerJoin.player:type_name -> gocraft.abi.v1.PlayerRef
+	19, // 6: gocraft.abi.v1.PlayerJoin.perms:type_name -> gocraft.abi.v1.PlayerJoin.PermsEntry
+	0,  // 7: gocraft.abi.v1.BlockPlace.player:type_name -> gocraft.abi.v1.PlayerRef
+	1,  // 8: gocraft.abi.v1.BlockPlace.pos:type_name -> gocraft.abi.v1.BlockPos
+	2,  // 9: gocraft.abi.v1.BlockPlace.block:type_name -> gocraft.abi.v1.Block
+	2,  // 10: gocraft.abi.v1.BlockPlace.replaced:type_name -> gocraft.abi.v1.Block
+	20, // 11: gocraft.abi.v1.BlockPlace.perms:type_name -> gocraft.abi.v1.BlockPlace.PermsEntry
+	0,  // 12: gocraft.abi.v1.PlayerQuit.player:type_name -> gocraft.abi.v1.PlayerRef
+	0,  // 13: gocraft.abi.v1.PlayerChat.player:type_name -> gocraft.abi.v1.PlayerRef
+	21, // 14: gocraft.abi.v1.PlayerChat.perms:type_name -> gocraft.abi.v1.PlayerChat.PermsEntry
+	0,  // 15: gocraft.abi.v1.PlayerCommand.player:type_name -> gocraft.abi.v1.PlayerRef
+	22, // 16: gocraft.abi.v1.PlayerCommand.perms:type_name -> gocraft.abi.v1.PlayerCommand.PermsEntry
+	0,  // 17: gocraft.abi.v1.PlayerDamage.player:type_name -> gocraft.abi.v1.PlayerRef
+	23, // 18: gocraft.abi.v1.PlayerDamage.perms:type_name -> gocraft.abi.v1.PlayerDamage.PermsEntry
+	0,  // 19: gocraft.abi.v1.PlayerDeath.player:type_name -> gocraft.abi.v1.PlayerRef
+	0,  // 20: gocraft.abi.v1.PlayerRespawn.player:type_name -> gocraft.abi.v1.PlayerRef
+	0,  // 21: gocraft.abi.v1.PlayerTeleport.player:type_name -> gocraft.abi.v1.PlayerRef
+	24, // 22: gocraft.abi.v1.PlayerTeleport.perms:type_name -> gocraft.abi.v1.PlayerTeleport.PermsEntry
+	0,  // 23: gocraft.abi.v1.PlayerInteract.player:type_name -> gocraft.abi.v1.PlayerRef
+	1,  // 24: gocraft.abi.v1.PlayerInteract.pos:type_name -> gocraft.abi.v1.BlockPos
+	25, // 25: gocraft.abi.v1.PlayerInteract.perms:type_name -> gocraft.abi.v1.PlayerInteract.PermsEntry
+	0,  // 26: gocraft.abi.v1.InventoryClick.player:type_name -> gocraft.abi.v1.PlayerRef
+	26, // 27: gocraft.abi.v1.InventoryClick.perms:type_name -> gocraft.abi.v1.InventoryClick.PermsEntry
+	0,  // 28: gocraft.abi.v1.ItemUse.player:type_name -> gocraft.abi.v1.PlayerRef
+	27, // 29: gocraft.abi.v1.ItemUse.perms:type_name -> gocraft.abi.v1.ItemUse.PermsEntry
+	30, // [30:30] is the sub-list for method output_type
+	30, // [30:30] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_abi_v1_events_proto_init() }
@@ -425,7 +1478,7 @@ func file_abi_v1_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_abi_v1_events_proto_rawDesc), len(file_abi_v1_events_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
